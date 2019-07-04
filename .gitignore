@@ -1,0 +1,35 @@
+# Created by .ignore support plugin (hsz.mobi)
+### Java template
+*.class
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+.idea/*
+*.iml
+.tgitconfig
+*target/
+
+# mac Files #
+*.DS_Store
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+.project
+.settings/
+finance-service-api/.classpath
+finance-service-api/.project
+finance-service-api/.settings/
+finance-service-biz/.classpath
+finance-service-biz/.project
+finance-service-biz/.settings/
+finance-service-client/.classpath
+finance-service-client/.project
+finance-service-client/.settings/
+finance-service-publish/.classpath
+finance-service-publish/.project
+finance-service-publish/.settings/
