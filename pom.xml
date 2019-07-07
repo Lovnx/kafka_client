@@ -78,22 +78,19 @@
             <version>5.1.5.RELEASE</version>
         </dependency>
 
-        <!-- spring-context -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>5.1.5.RELEASE</version>
-        </dependency>
+        <!--        &lt;!&ndash; spring-context &ndash;&gt;-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework</groupId>-->
+        <!--            <artifactId>spring-context</artifactId>-->
+        <!--            <version>5.1.5.RELEASE</version>-->
+        <!--        </dependency>-->
 
-        <!-- spring-beans -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-beans</artifactId>
-            <version>5.1.5.RELEASE</version>
-        </dependency>
-
-
-
+        <!--        &lt;!&ndash; spring-beans &ndash;&gt;-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework</groupId>-->
+        <!--            <artifactId>spring-beans</artifactId>-->
+        <!--            <version>5.1.5.RELEASE</version>-->
+        <!--        </dependency>-->
 
     </dependencies>
 

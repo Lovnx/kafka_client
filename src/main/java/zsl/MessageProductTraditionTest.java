@@ -3,11 +3,9 @@ package zsl;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -16,8 +14,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * Create by ZengShiLin on 2019-06-30
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("classpath:*spring-service.xml")
 public class MessageProductTraditionTest {
 
     ThreadPoolExecutor poolExecutor = new ThreadPoolExecutor(
@@ -31,6 +27,31 @@ public class MessageProductTraditionTest {
             new LinkedBlockingQueue<>(8)
     );
 
+    public static void main(String[] args) {
+        MessageProductTraditionTest test = new MessageProductTraditionTest();
+        KafkaProducer<String, String> producer2 = new KafkaProducer<>(test.properties2());
+        try {
+            producer2.initTransactions();
+            producer2.beginTransaction();
+            for (int index = 0; index < 5; index++) {
+                ProducerRecord<String, String> record = new ProducerRecord<>("test-topic7", UUID.randomUUID().toString(), "测试事务数据666-" + index);
+                ProducerRecord<String, String> record2 = new ProducerRecord<>("test-topic8", UUID.randomUUID().toString(), "测试数据3-test-topic8" + index);
+                System.out.println("发送1");
+                Future future = producer2.send(record);
+//                if (true) {
+//                    throw new RuntimeException("测试异常");
+//                }
+                producer2.send(record2);
+                future.get();
+                System.out.println("发送2");
+            }
+        } catch (Exception e) {
+            System.out.println("事务回滚");
+            //回滚
+            producer2.abortTransaction();
+        }
+    }
+
 
     @Test
     public void test() throws InterruptedException {
@@ -39,21 +60,21 @@ public class MessageProductTraditionTest {
         Thread.sleep(3000);
     }
 
-
+    @Test
     public void producer() {
         try {
-            KafkaProducer<Integer, String> producer = new KafkaProducer<>(this.properties());
-            producer.initTransactions();
-            producer.beginTransaction();
+            KafkaProducer<String, String> producer = new KafkaProducer<>(this.properties());
+            //producer.initTransactions();
+            //producer.beginTransaction();
             for (int index = 0; index < 5; index++) {
-                ProducerRecord<Integer, String> record = new ProducerRecord<>("test-topic", 123, "测试数据2-" + index);
+                ProducerRecord<String, String> record = new ProducerRecord<>("test-topic7", "123", "测试数据3-test-topic7" + index);
                 Future future = producer.send(record);
                 future.get();
                 System.out.println("发送");
                 Thread.sleep(500);
             }
-            producer.flush();
-            producer.commitTransaction();
+            //producer.flush();
+            // producer.commitTransaction();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -62,21 +83,20 @@ public class MessageProductTraditionTest {
 
     @Test
     public void producer2() {
-        try {
-            KafkaProducer<Integer, String> producer2 = new KafkaProducer<>(this.properties2());
-            producer2.initTransactions();
-            producer2.beginTransaction();
-            for (int index = 0; index < 5; index++) {
-                ProducerRecord<Integer, String> record = new ProducerRecord<>("test-topic2", 123, "测试数据2-" + index);
-                Future future = producer2.send(record);
-                future.get();
-                System.out.println("发送");
-            }
-            producer2.flush();
-            producer2.abortTransaction();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            KafkaProducer<Integer, String> producer2 = new KafkaProducer<>(this.properties2());
+//            producer2.initTransactions();
+//            producer2.beginTransaction();
+//            for (int index = 0; index < 5; index++) {
+//                ProducerRecord<Integer, String> record = new ProducerRecord<>("test-topic7", 123, "测试事务数据66-" + index);
+//                Future future = producer2.send(record);
+//                future.get();
+//                System.out.println("发送");
+//            }
+//            producer2.abortTransaction();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
 
@@ -84,10 +104,12 @@ public class MessageProductTraditionTest {
         Properties properties = new Properties();
         properties.put("acks", "all");
         properties.put("bootstrap.servers", "service1:9092,service2:9092,service3:9092");
-        properties.put("key.serializer", "org.apache.kafka.common.serialization.IntegerSerializer");
+        //properties.put("bootstrap.servers", "kafka-service:9092,kafka-service2:9092,kafka-service3:9092");
+        //properties.put("bootstrap.servers", "kafka-0.kafka-svc.docker36.svc.cluster.local:9092,kafka-1.kafka-svc.docker36.svc.cluster.local:9092,kafka-2.kafka-svc.docker36.svc.cluster.local:9092");
+        properties.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         properties.put("enable.idempotence", true);
-        properties.put("transactional.id", "test_transactional.id");
+        //properties.put("transactional.id", "test_transactional.id");
         properties.put("client.id", "ProducerTranscationnalExample");
         return properties;
     }
@@ -97,11 +119,14 @@ public class MessageProductTraditionTest {
         Properties properties = new Properties();
         properties.put("acks", "all");
         properties.put("bootstrap.servers", "service1:9092,service2:9092,service3:9092");
-        properties.put("key.serializer", "org.apache.kafka.common.serialization.IntegerSerializer");
+        //properties.put("bootstrap.servers", "kafka-service:9092,kafka-service2:9092,kafka-service3:9092");
+        //properties.put("bootstrap.servers", "kafka-0.kafka-svc.docker36.svc.cluster.local:9092,kafka-1.kafka-svc.docker36.svc.cluster.local:9092,kafka-2.kafka-svc.docker36.svc.cluster.local:9092");
+        properties.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         properties.put("enable.idempotence", true);
-        properties.put("transactional.id", "test_transactional.id2");
+        properties.put("transactional.id", "test_transactional.id3");
         properties.put("client.id", "ProducerTranscationnalExample2");
+        properties.put("isolation.level", "read_committed");
         return properties;
     }
 }
