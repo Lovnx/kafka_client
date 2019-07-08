@@ -41,8 +41,8 @@ public class MessageConsumerTest {
     private Properties properties() {
         Properties properties = new Properties();
         properties.put("acks", "all");
-        properties.put("bootstrap.servers", "service1:9092,service2:9092,service3:9092");
-        //properties.put("bootstrap.servers", "kafka-service:9092,kafka-service2:9092,kafka-service3:9092");
+        //properties.put("bootstrap.servers", "service1:9092,service2:9092,service3:9092");
+        properties.put("bootstrap.servers", "kafka-service:9092,kafka-service2:9092,kafka-service3:9092");
         //properties.put("bootstrap.servers", "kafka-0.kafka-svc.docker36.svc.cluster.local:9092,kafka-1.kafka-svc.docker36.svc.cluster.local:9092,kafka-2.kafka-svc.docker36.svc.cluster.local:9092");
         properties.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         properties.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");

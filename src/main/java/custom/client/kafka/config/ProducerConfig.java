@@ -88,5 +88,10 @@ public class ProducerConfig {
      */
     private String retries;
 
+    /**
+     * 发送超时时间（默认120秒）
+     */
+    private String deliveryTimeoutMs;
+
 
 }

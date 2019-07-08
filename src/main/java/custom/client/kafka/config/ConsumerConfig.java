@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 /**
  * 参考官网配置:http://kafka.apache.org/documentation/
  * Create by ZengShiLin on 2019-07-07
+ *
  * @author ZengShiLin
  */
 @Data
@@ -37,7 +38,6 @@ public class ConsumerConfig {
      */
     private String acks;
 
-
     /**
      * 健反序列化器(如果使用作为机器学习或者其它方面监控,那么会对图像或者视频进行序列化)
      */
@@ -63,5 +63,16 @@ public class ConsumerConfig {
      * anything:随机选取一个
      */
     private String autoOffsetReset;
+
+    /**
+     * 消费者心跳时间（默认10秒）
+     */
+    private String sessionTimeoutMs;
+
+    /**
+     * 如果开启了自动提交
+     * 消费者自动提交到kafka的频率（默认5秒）
+     */
+    private String autoCommitIntervalMs;
 
 }
