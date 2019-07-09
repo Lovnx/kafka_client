@@ -13,7 +13,11 @@ public enum kafkaExceptionEnum {
     /**
      * 异常错误码和异常内容
      */
-    PRODUCER_CONFIGURATION_IS_EMPTY(10000, "生产者配置为空");
+    PRODUCER_CONFIGURATION_IS_EMPTY(10000, "生产者配置为空"),
+    PRODUCER_POOL_INITIALIZE_FAILURE(10001, "生产者池初始化失败"),
+    PRODUCER_APPNAME_IS_EMPTY(10002, "生产者APP名称为空"),
+    PRODUCER_SEND_FAILURE(10003, "生产者发送消息失败");
+
 
     /**
      * 枚举value

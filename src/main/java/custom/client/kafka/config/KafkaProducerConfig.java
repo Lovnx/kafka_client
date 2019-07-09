@@ -41,12 +41,16 @@ public class KafkaProducerConfig {
 
     /**
      * Kafka消息健序列化器(如果使用作为机器学习或者其它方面监控,那么会对图像或者视频进行序列化)
+     * TODO 暂时不对外提供自定义 因为为服务大部分数据都是走JSON
      */
+    @Deprecated
     private String keySerializer;
 
     /**
      * kafka消息值序列化器(如果使用作为机器学习或者其它方面监控,那么会对图像或者视频进行序列化)
+     * TODO 暂时不对外提供自定义 因为为服务大部分数据都是走JSON
      */
+    @Deprecated
     private String valueSerializer;
 
 
@@ -58,7 +62,7 @@ public class KafkaProducerConfig {
      * 精确一次 (exactly once): 消息不会丢失,也不会被重复发送
      * 开启幂等性是在broker保证精确一致性(前提是kafka消息的key值必须全局唯一)
      */
-    private String enableIdempotence;
+    private boolean enableIdempotence;
 
     /**
      * 项目名称
@@ -91,5 +95,10 @@ public class KafkaProducerConfig {
      */
     private String deliveryTimeoutMs;
 
+
+    /**
+     * 配置事务隔离级别（read_committed 默认 , unread_committed）
+     */
+    private String isolationLevel;
 
 }
