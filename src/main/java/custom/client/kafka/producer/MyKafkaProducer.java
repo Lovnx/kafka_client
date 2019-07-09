@@ -57,10 +57,10 @@ public class MyKafkaProducer implements InitializingBean {
                 PRODUCER_THREADLOCAL = new ThreadLocal<>();
                 PRODUCER_THREADLOCAL.set(producer);
                 INITIALIZE = true;
+                Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
+                log.info("生产者初始化完成");
             }
         }
-        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
-        log.info("生产者初始化完成");
     }
 
     /**
