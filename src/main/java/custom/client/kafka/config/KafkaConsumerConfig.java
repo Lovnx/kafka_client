@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.springframework.stereotype.Component;
 
 /**
  * 参考官网配置:http://kafka.apache.org/documentation/
@@ -18,8 +17,7 @@ import org.springframework.stereotype.Component;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@Component
-public class ConsumerConfig {
+public class KafkaConsumerConfig {
 
     /**
      * kafka borkers 集群,以前是zookeeper集群(从2.x版本开始kafka转变配置为broker机器IP)

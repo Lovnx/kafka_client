@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.springframework.stereotype.Component;
 
 /**
  * 参考官网配置:http://kafka.apache.org/documentation/
@@ -20,8 +19,7 @@ import org.springframework.stereotype.Component;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@Component
-public class ProducerConfig {
+public class KafkaProducerConfig {
 
     /**
      * kafka borkers 集群,以前是zookeeper集群(从2.x版本开始kafka转变配置为broker机器IP)
@@ -55,7 +53,7 @@ public class ProducerConfig {
     /**
      * 是否开启幂等性 true 是 false 否
      * kafka 提供三种等级的消息交付一致性
-     * 最多一次（at most once）：消息可能会丢失,但绝不不会被重复发送
+     * 最多一次 (at most once): 消息可能会丢失,但绝不不会被重复发送
      * 至少一次 (at least once): 消息不会丢失,但是可能被重复发送
      * 精确一次 (exactly once): 消息不会丢失,也不会被重复发送
      * 开启幂等性是在broker保证精确一致性(前提是kafka消息的key值必须全局唯一)

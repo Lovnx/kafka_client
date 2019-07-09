@@ -155,8 +155,8 @@ public class MessageProductTraditionTest {
     public void producer() {
         try {
             KafkaProducer<String, String> producer = new KafkaProducer<>(this.properties());
-            //ProducerConfig.initTransactions();
-            //ProducerConfig.beginTransaction();
+            //KafkaProducerConfig.initTransactions();
+            //KafkaProducerConfig.beginTransaction();
             for (int index = 0; index < 5; index++) {
                 ProducerRecord<String, String> record = new ProducerRecord<>("test-topic7", "123", "测试数据3-test-topic7" + index);
                 Future future = producer.send(record);
@@ -164,8 +164,8 @@ public class MessageProductTraditionTest {
                 System.out.println("发送");
                 Thread.sleep(500);
             }
-            //ProducerConfig.flush();
-            // ProducerConfig.commitTransaction();
+            //KafkaProducerConfig.flush();
+            // KafkaProducerConfig.commitTransaction();
         } catch (Exception e) {
             e.printStackTrace();
         }
