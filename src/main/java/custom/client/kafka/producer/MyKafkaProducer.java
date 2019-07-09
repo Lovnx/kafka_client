@@ -34,12 +34,12 @@ public class MyKafkaProducer implements InitializingBean {
     private KafkaProducerConfig producerConfig;
 
     /**
-     * 线程本地生产者（volatile 增强线程可见性）使用ThreadLocal
+     * 线程本地生产者（volatile 增强可见性）使用ThreadLocal
      */
     private volatile static ThreadLocal<KafkaProducer<String, String>> PRODUCER_THREADLOCAL;
 
     /**
-     * 是否已经初始化（volatile 增强线程可见性）
+     * 是否已经初始化（volatile 增强可见性）
      */
     private volatile static boolean INITIALIZE = false;
 
