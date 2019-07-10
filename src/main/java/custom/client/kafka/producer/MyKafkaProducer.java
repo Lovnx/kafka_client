@@ -51,11 +51,11 @@ public class MyKafkaProducer implements InitializingBean {
                 Properties properties = MyKafkaProducer.properties(this.producerConfig);
                 //创建生产者
                 KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
-                if (this.producerConfig.isEnableTransactional()) {
-                    producer.initTransactions();
-                }
                 PRODUCER_THREADLOCAL = new ThreadLocal<>();
                 PRODUCER_THREADLOCAL.set(producer);
+                if (this.producerConfig.isEnableTransactional()) {
+                    PRODUCER_THREADLOCAL.get().initTransactions();
+                }
                 INITIALIZE = true;
                 Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
                 log.info("生产者初始化完成");
@@ -68,8 +68,9 @@ public class MyKafkaProducer implements InitializingBean {
      *
      * @param producerConfig 生成者配置
      */
-    MyKafkaProducer(KafkaProducerConfig producerConfig) {
-
+    public MyKafkaProducer(KafkaProducerConfig producerConfig) throws Exception {
+        this.producerConfig = producerConfig;
+        this.afterPropertiesSet();
     }
 
     /**
@@ -111,6 +112,7 @@ public class MyKafkaProducer implements InitializingBean {
             //提交事务
             PRODUCER_THREADLOCAL.get().commitTransaction();
         } catch (Exception e) {
+            System.out.println("遇到异常事务回滚:{}" + e.getMessage());
             //回滚事务
             PRODUCER_THREADLOCAL.get().abortTransaction();
             throw e;
@@ -130,6 +132,7 @@ public class MyKafkaProducer implements InitializingBean {
                     message.getKey(),
                     JSON.toJSONString(message.getValue()));
             PRODUCER_THREADLOCAL.get().send(record).get();
+            System.out.println("发送成功");
         } catch (Exception e) {
             log.error("消息发送失败:{}", e);
             throw new KafkaException(kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getValue(),
@@ -169,9 +172,9 @@ public class MyKafkaProducer implements InitializingBean {
         //是否开启幂等
         properties.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, producerConfig.isEnableIdempotence());
         //事务 ID (每台机器独立开启)
-        properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, producerConfig.getAppName() + "_" + UUID.randomUUID().toString());
+        properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, producerConfig.getAppName() + "_TRANSACTIONAL_ID_" + UUID.randomUUID().toString());
         //client ID
-        properties.put(ProducerConfig.CLIENT_ID_CONFIG, producerConfig.getAppName() + "_" + UUID.randomUUID().toString());
+        properties.put(ProducerConfig.CLIENT_ID_CONFIG, producerConfig.getAppName() + "_CLIENT_ID_" + UUID.randomUUID().toString());
         //事务级别 (默认 read_committed)
         properties.put("isolation.level", Optional.ofNullable(producerConfig.getIsolationLevel()).orElse("read_committed"));
         return properties;

@@ -1,6 +1,10 @@
 package zsl;
 
+import custom.client.kafka.Message.Message;
+import custom.client.kafka.config.KafkaProducerConfig;
 import custom.client.kafka.producer.MyKafkaProducer;
+
+import java.util.UUID;
 
 /**
  * @program: kafka-test
@@ -10,15 +14,20 @@ import custom.client.kafka.producer.MyKafkaProducer;
  **/
 public class Test {
 
-    public static void main(String[] args) {
-        MyKafkaProducer producer = new MyKafkaProducer();
+    public static void main(String[] args) throws Exception {
+        MyKafkaProducer producer = new MyKafkaProducer(KafkaProducerConfig.builder()
+                .acks("all")
+                .bootstrapServers("kafka-service:9092,kafka-service2:9092,kafka-service3:9092")
+                .enableIdempotence(true)
+                .enableTransactional(true)
+                .appName("finance-web")
+                .isolationLevel("read_committed")
+                .build());
 
-        /**
-         * 开启事务
-         */
-        producer.sendByTransaction(() -> {
-
-        });
-
+        producer.sendSync(Message.builder()
+                .value("123123")
+                .key(UUID.randomUUID().toString())
+                .topic("test-topice12")
+                .build());
     }
 }

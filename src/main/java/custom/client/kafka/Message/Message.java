@@ -1,6 +1,8 @@
 package custom.client.kafka.Message;
 
+import lombok.Builder;
 import lombok.Getter;
+import lombok.experimental.Accessors;
 
 /**
  * @program: kafka-test
@@ -8,6 +10,8 @@ import lombok.Getter;
  * @author: ZengShiLin
  * @create: 2019-07-09 12:36
  **/
+@Builder
+@Accessors(chain = true)
 public class Message<T> {
 
     /**

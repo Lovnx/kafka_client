@@ -30,7 +30,7 @@ public class MessageProductTraditionTest {
     public static void main(String[] args) {
         MessageProductTraditionTest test = new MessageProductTraditionTest();
         poolExecutor.execute(test::testProduceLocal);
-        poolExecutor.execute(test::testProduceLocal2);
+       // poolExecutor.execute(test::testProduceLocal2);
     }
 
     static ThreadLocal<KafkaProducer<String, String>> producerThreadLocal = ThreadLocal.withInitial(() -> new KafkaProducer<>(MessageProductTraditionTest.properties3()));
@@ -45,8 +45,8 @@ public class MessageProductTraditionTest {
             Thread.sleep(2000);
             for (int index = 0; index < 5; index++) {
                 //ProducerRecord<String, String> record = new ProducerRecord<>("test-topic7", UUID.randomUUID().toString(), "线程一测试事务数据666-" + index);
-                ProducerRecord<String, String> record2 = new ProducerRecord<>("test-topic8", UUID.randomUUID().toString(), "线程一测试数据3-test-topic8" + index);
-                System.out.println("发送1");
+                ProducerRecord<String, String> record2 = new ProducerRecord<>("test-topic12", UUID.randomUUID().toString(), "线程一测试数据3-test-topic8" + index);
+                //System.out.println("发送1");
                 //Future future = producerThreadLocal.get().send(record);
 //                if (true) {
 //                    throw new RuntimeException("测试异常");

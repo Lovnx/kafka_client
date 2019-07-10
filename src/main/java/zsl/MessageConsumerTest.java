@@ -20,8 +20,8 @@ public class MessageConsumerTest {
     public static void main(String[] args) {
         MessageConsumerTest test = new MessageConsumerTest();
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(test.properties());
-        consumer.subscribe(Arrays.asList("test-topic7", "test-topic8"));
-        System.out.println("partition信息=" + consumer.partitionsFor("test-topic7"));
+        consumer.subscribe(Arrays.asList("test-topice12"));
+        System.out.println("partition信息=" + consumer.partitionsFor("test-topic12"));
         while (true) {
             //读取超时时间时间 100ms
             ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
