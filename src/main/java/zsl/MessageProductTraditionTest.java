@@ -1,7 +1,9 @@
 package zsl;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.junit.Test;
 
 import java.util.Properties;
@@ -75,13 +77,13 @@ public class MessageProductTraditionTest {
                 ProducerRecord<String, String> record = new ProducerRecord<>("test-topic12", UUID.randomUUID().toString(), "test-topice12测试事务数据666-" + index);
                 //ProducerRecord<String, String> record2 = new ProducerRecord<>("test-topic8", UUID.randomUUID().toString(), "线程二测试数据3-test-topic8" + index);
                 System.out.println("发送1");
-                Future future = producerThreadLocal.get().send(record);
+                Future<RecordMetadata> future = producerThreadLocal.get().send(record);
 //                if (true) {
 //                    throw new RuntimeException("测试异常");
 //                }
                 //producerThreadLocal.get().send(record2);
-                future.get();
-                System.out.println("发送2");
+                RecordMetadata metadata = future.get();
+                System.out.println("发送成功,metadata" + JSON.toJSONString(metadata));
             }
         } catch (Exception e) {
             e.printStackTrace();

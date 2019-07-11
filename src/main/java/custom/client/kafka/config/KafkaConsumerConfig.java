@@ -26,17 +26,6 @@ public class KafkaConsumerConfig {
     private String bootstrapServers;
 
     /**
-     * broker收到消息回复响应级别
-     * 值: [all, -1, 0, 1]
-     * all:等待leader等待所有broker同步完副本回复 [all 等价于 -1]
-     * 1 :leader同步完直接回复,不等待所有broker同步
-     * 0 :leader不等待同步,直接响应
-     * 在内网环境下,目前没有任何事实证明 all级别 TPS 就一定很差或者远远小于 0级别
-     * [在没有性能问题之前我建议大家都使用all因为这样比较安全]
-     */
-    private String acks;
-
-    /**
      * 健反序列化器(如果使用作为机器学习或者其它方面监控,那么会对图像或者视频进行序列化)
      */
     private String keyDeserializer;
@@ -50,7 +39,7 @@ public class KafkaConsumerConfig {
      * 是否自动提交(如果生成者开启了事务,我建议关闭)
      * 是:true  否:false
      */
-    private String enableAutoCommit;
+    private boolean enableAutoCommit;
 
     /**
      * 这是一个比较坑的配置 自动重置 offset的方式 [没有合理配置会导致消费者消费不到消息]
@@ -73,4 +62,9 @@ public class KafkaConsumerConfig {
      */
     private String autoCommitIntervalMs;
 
+    /**
+     * 将会使用这个设置消费者组（Group ID）
+     * 应用名称
+     */
+    private String appName;
 }

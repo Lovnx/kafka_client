@@ -131,8 +131,8 @@ public class MyKafkaProducer implements InitializingBean {
                     message.getTopic(),
                     message.getKey(),
                     JSON.toJSONString(message.getValue()));
-            PRODUCER_THREADLOCAL.get().send(record).get();
-            System.out.println("发送成功");
+            RecordMetadata metadata = PRODUCER_THREADLOCAL.get().send(record).get();
+            System.out.println("发送成功,metadata" + JSON.toJSONString(metadata));
         } catch (Exception e) {
             e.printStackTrace();
             log.error("消息发送失败:{}", e);
