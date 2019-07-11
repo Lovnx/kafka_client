@@ -1,11 +1,15 @@
 package zsl;
 
+import com.google.common.collect.Maps;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -20,17 +24,21 @@ public class MessageConsumerTest {
     public static void main(String[] args) {
         MessageConsumerTest test = new MessageConsumerTest();
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(test.properties());
-        consumer.subscribe(Arrays.asList("test-topice12"));
+        consumer.subscribe(Arrays.asList("test-topic7", "test-topic8", "test-topic12", "test-topice12"));
         System.out.println("partition信息=" + consumer.partitionsFor("test-topic12"));
+        Map<TopicPartition, OffsetAndMetadata> metadataMap = Maps.newHashMap();
         while (true) {
             //读取超时时间时间 100ms
             ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
             for (ConsumerRecord<String, String> record : records) {
                 System.out.println("topic:" + record.topic() + ",partition=" + records.partitions() + ", offset = " + record.offset() + ", key = " + record.key() + ", value = " + record.value());
+                //手动提交  offset + 1，下次消费者从该偏移量开始拉取消息 (metadata 提交的一些额外信息)
+                metadataMap.put(new TopicPartition(record.topic(), record.partition()), new OffsetAndMetadata(record.offset() + 1, "no"));
             }
             System.out.println("循环,partition=" + records.partitions());
             try {
-                consumer.commitAsync();
+                //手动提交 同步
+                consumer.commitSync(metadataMap);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -46,8 +54,9 @@ public class MessageConsumerTest {
         //properties.put("bootstrap.servers", "kafka-0.kafka-svc.docker36.svc.cluster.local:9092,kafka-1.kafka-svc.docker36.svc.cluster.local:9092,kafka-2.kafka-svc.docker36.svc.cluster.local:9092");
         properties.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         properties.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        //消费者会自动Rebalance
         properties.put("group.id", "test3");
-        properties.put("enable.auto.commit", "true");
+        properties.put("enable.auto.commit", "false");
         properties.put("auto.offset.reset", "latest");
         //properties.put("auto.commit.interval.ms", "1000");
         //properties.put("session.timeout.ms", "30000");

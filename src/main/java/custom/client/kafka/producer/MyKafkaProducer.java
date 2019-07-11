@@ -34,9 +34,9 @@ public class MyKafkaProducer implements InitializingBean {
     private KafkaProducerConfig producerConfig;
 
     /**
-     * 线程本地生产者（volatile 增强可见性）使用ThreadLocal
+     * 线程本地生产者  使用ThreadLocal
      */
-    private volatile static ThreadLocal<KafkaProducer<String, String>> PRODUCER_THREADLOCAL;
+    private static ThreadLocal<KafkaProducer<String, String>> PRODUCER_THREADLOCAL;
 
     /**
      * 是否已经初始化（volatile 增强可见性）
@@ -44,15 +44,15 @@ public class MyKafkaProducer implements InitializingBean {
     private volatile static boolean INITIALIZE = false;
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         //双重锁校验
-        if (null == PRODUCER_THREADLOCAL) {
+        if (null == PRODUCER_THREADLOCAL || null == PRODUCER_THREADLOCAL.get()) {
             synchronized (MyKafkaProducer.class) {
                 Properties properties = MyKafkaProducer.properties(this.producerConfig);
                 //创建生产者
                 KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
                 PRODUCER_THREADLOCAL = new ThreadLocal<>();
-                PRODUCER_THREADLOCAL.set(producer);
+                PRODUCER_THREADLOCAL = ThreadLocal.withInitial(() -> producer);
                 if (this.producerConfig.isEnableTransactional()) {
                     PRODUCER_THREADLOCAL.get().initTransactions();
                 }
@@ -68,7 +68,7 @@ public class MyKafkaProducer implements InitializingBean {
      *
      * @param producerConfig 生成者配置
      */
-    public MyKafkaProducer(KafkaProducerConfig producerConfig) throws Exception {
+    public MyKafkaProducer(KafkaProducerConfig producerConfig) {
         this.producerConfig = producerConfig;
         this.afterPropertiesSet();
     }
@@ -134,9 +134,12 @@ public class MyKafkaProducer implements InitializingBean {
             PRODUCER_THREADLOCAL.get().send(record).get();
             System.out.println("发送成功");
         } catch (Exception e) {
+            e.printStackTrace();
             log.error("消息发送失败:{}", e);
             throw new KafkaException(kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getValue(),
                     kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getName());
+        } finally {
+            PRODUCER_THREADLOCAL.get().flush();
         }
     }
 
@@ -171,12 +174,15 @@ public class MyKafkaProducer implements InitializingBean {
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         //是否开启幂等
         properties.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, producerConfig.isEnableIdempotence());
-        //事务 ID (每台机器独立开启)
-        properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, producerConfig.getAppName() + "_TRANSACTIONAL_ID_" + UUID.randomUUID().toString());
+        //是否开启事物
+        if (producerConfig.isEnableTransactional()) {
+            //事务 ID (每台机器独立开启)
+            properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, producerConfig.getAppName() + "_TRANSACTIONAL_ID_" + UUID.randomUUID().toString());
+            //事务级别 (默认 read_committed)
+            properties.put("isolation.level", Optional.ofNullable(producerConfig.getIsolationLevel()).orElse("read_committed"));
+        }
         //client ID
         properties.put(ProducerConfig.CLIENT_ID_CONFIG, producerConfig.getAppName() + "_CLIENT_ID_" + UUID.randomUUID().toString());
-        //事务级别 (默认 read_committed)
-        properties.put("isolation.level", Optional.ofNullable(producerConfig.getIsolationLevel()).orElse("read_committed"));
         return properties;
     }
 

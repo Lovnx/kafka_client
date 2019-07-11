@@ -29,8 +29,10 @@ public class MessageProductTraditionTest {
 
     public static void main(String[] args) {
         MessageProductTraditionTest test = new MessageProductTraditionTest();
-        poolExecutor.execute(test::testProduceLocal);
-       // poolExecutor.execute(test::testProduceLocal2);
+        //poolExecutor.execute(test::testProduceLocal);
+        poolExecutor.execute(test::testProduceLocal2);
+        //MessageProductTraditionTest.testProduce2();
+        //test.testProduce();
     }
 
     static ThreadLocal<KafkaProducer<String, String>> producerThreadLocal = ThreadLocal.withInitial(() -> new KafkaProducer<>(MessageProductTraditionTest.properties3()));
@@ -45,14 +47,13 @@ public class MessageProductTraditionTest {
             Thread.sleep(2000);
             for (int index = 0; index < 5; index++) {
                 //ProducerRecord<String, String> record = new ProducerRecord<>("test-topic7", UUID.randomUUID().toString(), "线程一测试事务数据666-" + index);
-                ProducerRecord<String, String> record2 = new ProducerRecord<>("test-topic12", UUID.randomUUID().toString(), "线程一测试数据3-test-topic8" + index);
+                ProducerRecord<String, String> record2 = new ProducerRecord<>("test-topic12", UUID.randomUUID().toString(), "线程一测试数据-test-topic12" + index);
                 //System.out.println("发送1");
                 //Future future = producerThreadLocal.get().send(record);
 //                if (true) {
 //                    throw new RuntimeException("测试异常");
 //                }
-                producerThreadLocal.get().send(record2);
-                //future.get();
+                producerThreadLocal.get().send(record2).get();
                 System.out.println("发送2");
             }
         } catch (Exception e) {
@@ -68,25 +69,25 @@ public class MessageProductTraditionTest {
      */
     public void testProduceLocal2() {
         try {
-            producerThreadLocal.get().initTransactions();
-            producerThreadLocal.get().beginTransaction();
-            Thread.sleep(2000);
+            //producerThreadLocal.get().initTransactions();
+            //producerThreadLocal.get().beginTransaction();
             for (int index = 0; index < 5; index++) {
-                ProducerRecord<String, String> record = new ProducerRecord<>("test-topic7", UUID.randomUUID().toString(), "线程二测试事务数据666-" + index);
+                ProducerRecord<String, String> record = new ProducerRecord<>("test-topic12", UUID.randomUUID().toString(), "test-topice12测试事务数据666-" + index);
                 //ProducerRecord<String, String> record2 = new ProducerRecord<>("test-topic8", UUID.randomUUID().toString(), "线程二测试数据3-test-topic8" + index);
                 System.out.println("发送1");
                 Future future = producerThreadLocal.get().send(record);
-                if (true) {
-                    throw new RuntimeException("测试异常");
-                }
+//                if (true) {
+//                    throw new RuntimeException("测试异常");
+//                }
                 //producerThreadLocal.get().send(record2);
                 future.get();
                 System.out.println("发送2");
             }
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println("事务回滚");
             //回滚
-            producerThreadLocal.get().abortTransaction();
+            //producerThreadLocal.get().abortTransaction();
         }
     }
 
@@ -94,7 +95,7 @@ public class MessageProductTraditionTest {
     /**
      * 测试线程事务隔离性
      */
-    public static void testProduce() {
+    public void testProduce() {
         MessageProductTraditionTest test = new MessageProductTraditionTest();
         KafkaProducer<String, String> producer2 = new KafkaProducer<>(test.properties2());
         try {
@@ -136,9 +137,9 @@ public class MessageProductTraditionTest {
                 ProducerRecord<String, String> record2 = new ProducerRecord<>("test-topic8", UUID.randomUUID().toString(), "线程二测试数据3-test-topic8" + index);
                 System.out.println("发送1");
                 Future future = producer2.send(record);
-                if (true) {
-                    throw new RuntimeException("测试异常");
-                }
+//                if (true) {
+//                    throw new RuntimeException("测试异常");
+//                }
                 producer2.send(record2);
                 future.get();
                 System.out.println("发送2");
@@ -212,9 +213,9 @@ public class MessageProductTraditionTest {
         properties.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         properties.put("enable.idempotence", true);
-        properties.put("transactional.id", UUID.randomUUID().toString());
+        //properties.put("transactional.id", UUID.randomUUID().toString());
         properties.put("client.id", "ProducerTranscationnalExample2");
-        properties.put("isolation.level", "read_committed");
+        //properties.put("isolation.level", "read_committed");
         return properties;
     }
 }
