@@ -20,7 +20,7 @@ import java.util.concurrent.Future;
 
 /**
  * @program: kafka-test
- * @description: kafka生产者（支持池化和，ThreadLocal）
+ * @description: kafka生产者（支持池化和，ThreadLocal） KafkaProducer 是线程安全，但是事务应该是ThreadLocal的
  * @author: ZengShiLin
  * @create: 2019-07-09 09:06
  **/
@@ -125,7 +125,7 @@ public class MyKafkaProducer implements InitializingBean {
 
 
     /**
-     * 同步发送
+     * 同步发送（等待同步响应）
      *
      * @param message 需要发送的消息
      */
@@ -152,7 +152,7 @@ public class MyKafkaProducer implements InitializingBean {
 
 
     /**
-     * 异步发送
+     * 异步发送（无回调，发了就不管了）
      */
     public <T> Future<RecordMetadata> sendAsync(Message<T> message) {
         //没有初始化不给发送
@@ -166,6 +166,8 @@ public class MyKafkaProducer implements InitializingBean {
                 JSON.toJSONString(message.getValue()));
         return PRODUCER_THREADLOCAL.get().send(record);
     }
+
+    //TODO 添加一个有回调的异步发送者
 
 
     /**
