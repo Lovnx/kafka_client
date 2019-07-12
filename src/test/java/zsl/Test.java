@@ -38,14 +38,16 @@ public class Test {
             .build());
 
     public static void main(String[] args) throws Exception {
-
-        producer.openTransaction(() -> {
+        for (int i = 0; i < 5; i++) {
+            int value = i;
+            //producer.openTransaction(() -> {
             producer.sendSync(Message.builder()
-                    .value("自定义测试数据")
+                    .value("自定义测试数据" + value)
                     .key(UUID.randomUUID().toString())
                     .topic("zsl-test-topic12")
                     .build());
-        });
+            //});
 
+        }
     }
 }

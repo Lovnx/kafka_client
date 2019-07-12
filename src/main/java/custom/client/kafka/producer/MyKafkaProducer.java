@@ -141,14 +141,12 @@ public class MyKafkaProducer implements InitializingBean {
                     message.getKey(),
                     JSON.toJSONString(message.getValue()));
             RecordMetadata metadata = PRODUCER_THREADLOCAL.get().send(record).get();
-            System.out.println("发送成功,metadata" + JSON.toJSONString(metadata));
+            System.out.println("发送成功，metadata：" + JSON.toJSONString(metadata));
         } catch (Exception e) {
             e.printStackTrace();
             log.error("消息发送失败:{}", e);
             throw new KafkaException(kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getValue(),
                     kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getName());
-        } finally {
-            PRODUCER_THREADLOCAL.get().flush();
         }
     }
 
