@@ -149,7 +149,7 @@ public class MyKafkaConsuner implements InitializingBean {
         private String topic;
 
         /**
-         * 消费者允许状态
+         * 消费者是否运行中
          */
         private boolean consumering = true;
 
@@ -188,13 +188,14 @@ public class MyKafkaConsuner implements InitializingBean {
             //手动提交使用的Map
             Map<TopicPartition, OffsetAndMetadata> metadataMap = Maps.newHashMap();
             while (consumering) {
-                //80ms 间隔主动抓取一次
+                //100ms 间隔主动抓取一次
                 ConsumerRecords<String, String> records = this.consumer.poll(Duration.ofMillis(100));
                 int count = 0;
                 isRun = true;
                 for (ConsumerRecord<String, String> record : records) {
                     log.info("topic:" + record.topic() + ",partition=" + records.partitions() + ", offset = " + record.offset() + ", key = " + record.key() + ", value = " + record.value());
                     TypeReference typeReference = this.messageExecutors.get(0).getTypeReference();
+                    //消息序列化成指定的DTO格式（传输数据都需要使用DTO封装起来）
                     Object obj = JSON.parseObject(record.value(), typeReference.getType());
                     Message message = new Message<>(record.key(), record.topic(), obj);
                     boolean success = false;
@@ -208,13 +209,17 @@ public class MyKafkaConsuner implements InitializingBean {
                     }
                     //当前消息消费成功
                     if (success) {
-                        //消费信息：【消费系统 + 消息Key + 消费时间 + 系统IP + 系统HostName】
+                        //消费信息：【消费系统 + 消息Key + 消费时间毫秒 + 系统IP + 系统HostName】
                         String info = consumerConfig.getAppName() + "_" + record.key() + "_" + System.currentTimeMillis() + "_" + ip + "_" + hostName;
-                        //手动提交  offset + 1，下次消费者从该偏移量开始拉取消息 (metadata 提交的一些额外信息)
+                        //手动提交map  offset + 1，下次消费者从该偏移量开始拉取消息 (metadata 提交的一些额外信息)
                         metadataMap.put(new TopicPartition(record.topic(), record.partition()),
                                 new OffsetAndMetadata(record.offset() + 1, info));
                     }
-                    //达到提交的阈值（有时候一批数据特别多，这个时候就需要批量提交了 默认10提交一次）
+                    //判断是否需要自动提交(这个Key存的就是boolean)
+                    if (!(boolean) properties.get(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG)) {
+                        count++;
+                    }
+                    //达到提交的阈值（有时候一批数据特别多，这个时候就需要批量提交了 默认10提交一次，可以自行设置）
                     if (autoCommitSize <= count) {
                         //手动提交 同步
                         this.consumer.commitSync(metadataMap);
@@ -223,10 +228,12 @@ public class MyKafkaConsuner implements InitializingBean {
                         metadataMap.clear();
                     }
                 }
-                //手动提交 同步
-                this.consumer.commitSync(metadataMap);
-                //清空commit信息
-                metadataMap.clear();
+                if (!(boolean) properties.get(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG)) {
+                    //手动提交 同步
+                    this.consumer.commitSync(metadataMap);
+                    //清空commit信息
+                    metadataMap.clear();
+                }
                 isRun = false;
             }
         }

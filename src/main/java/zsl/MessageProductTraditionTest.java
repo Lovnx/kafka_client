@@ -31,13 +31,13 @@ public class MessageProductTraditionTest {
 
     public static void main(String[] args) {
         MessageProductTraditionTest test = new MessageProductTraditionTest();
-        //poolExecutor.execute(test::testProduceLocal);
-        poolExecutor.execute(test::testProduceLocal2);
+        poolExecutor.execute(test::testProduceLocal);
+        //poolExecutor.execute(test::testProduceLocal2);
         //MessageProductTraditionTest.testProduce2();
         //test.testProduce();
     }
 
-    static ThreadLocal<KafkaProducer<String, String>> producerThreadLocal = ThreadLocal.withInitial(() -> new KafkaProducer<>(MessageProductTraditionTest.properties3()));
+    static ThreadLocal<KafkaProducer<String, String>> producerThreadLocal = ThreadLocal.withInitial(() -> new KafkaProducer<>(MessageProductTraditionTest.properties2()));
 
     /**
      * 测试线程事务隔离性
@@ -48,13 +48,7 @@ public class MessageProductTraditionTest {
             producerThreadLocal.get().beginTransaction();
             Thread.sleep(2000);
             for (int index = 0; index < 5; index++) {
-                //ProducerRecord<String, String> record = new ProducerRecord<>("test-topic7", UUID.randomUUID().toString(), "线程一测试事务数据666-" + index);
                 ProducerRecord<String, String> record2 = new ProducerRecord<>("test-topic12", UUID.randomUUID().toString(), "线程一测试数据-test-topic12" + index);
-                //System.out.println("发送1");
-                //Future future = producerThreadLocal.get().send(record);
-//                if (true) {
-//                    throw new RuntimeException("测试异常");
-//                }
                 producerThreadLocal.get().send(record2).get();
                 System.out.println("发送2");
             }
@@ -190,11 +184,9 @@ public class MessageProductTraditionTest {
     }
 
 
-    private Properties properties2() {
+    private static Properties properties2() {
         Properties properties = new Properties();
         properties.put("acks", "all");
-        //properties.put("bootstrap.servers", "service1:9092,service2:9092,service3:9092");
-        //properties.put("bootstrap.servers", "kafka-service:9092,kafka-service2:9092,kafka-service3:9092");
         properties.put("bootstrap.servers", "kafka-0.kafka-svc.docker36.svc.cluster.local:9092,kafka-1.kafka-svc.docker36.svc.cluster.local:9092,kafka-2.kafka-svc.docker36.svc.cluster.local:9092");
         properties.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
@@ -209,15 +201,11 @@ public class MessageProductTraditionTest {
     public static Properties properties3() {
         Properties properties = new Properties();
         properties.put("acks", "all");
-        //properties.put("bootstrap.servers", "service1:9092,service2:9092,service3:9092");
         properties.put("bootstrap.servers", "kafka-service:9092,kafka-service2:9092,kafka-service3:9092");
-        //properties.put("bootstrap.servers", "kafka-0.kafka-svc.docker36.svc.cluster.local:9092,kafka-1.kafka-svc.docker36.svc.cluster.local:9092,kafka-2.kafka-svc.docker36.svc.cluster.local:9092");
         properties.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         properties.put("enable.idempotence", true);
-        //properties.put("transactional.id", UUID.randomUUID().toString());
         properties.put("client.id", "ProducerTranscationnalExample2");
-        //properties.put("isolation.level", "read_committed");
         return properties;
     }
 }

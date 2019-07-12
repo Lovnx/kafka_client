@@ -108,11 +108,15 @@ public class MyKafkaProducer implements InitializingBean {
     public void openTransaction(TransactionExecute execute) {
         try {
             PRODUCER_THREADLOCAL.get().beginTransaction();
+        } catch (Exception e) {
+            System.out.println("开启事务失败:" + e.getMessage());
+        }
+        try {
             execute.doInTransaction();
             //提交事务
             PRODUCER_THREADLOCAL.get().commitTransaction();
         } catch (Exception e) {
-            System.out.println("遇到异常事务回滚:{}" + e.getMessage());
+            System.out.println("遇到异常事务回滚:" + e.getMessage());
             //回滚事务
             PRODUCER_THREADLOCAL.get().abortTransaction();
             throw e;
@@ -126,6 +130,11 @@ public class MyKafkaProducer implements InitializingBean {
      * @param message 需要发送的消息
      */
     public <T> void sendSync(Message<T> message) {
+        //没有初始化不给发送
+        if (!INITIALIZE) {
+            throw new KafkaException(kafkaExceptionEnum.PRODUCER_THREADLOCAL_INITIALIZE_FAILURE.getValue()
+                    , kafkaExceptionEnum.PRODUCER_THREADLOCAL_INITIALIZE_FAILURE.getName());
+        }
         try {
             ProducerRecord<String, String> record = new ProducerRecord<>(
                     message.getTopic(),
@@ -148,6 +157,11 @@ public class MyKafkaProducer implements InitializingBean {
      * 异步发送
      */
     public <T> Future<RecordMetadata> sendAsync(Message<T> message) {
+        //没有初始化不给发送
+        if (!INITIALIZE) {
+            throw new KafkaException(kafkaExceptionEnum.PRODUCER_THREADLOCAL_INITIALIZE_FAILURE.getValue()
+                    , kafkaExceptionEnum.PRODUCER_THREADLOCAL_INITIALIZE_FAILURE.getName());
+        }
         ProducerRecord<String, String> record = new ProducerRecord<>(
                 message.getTopic(),
                 message.getKey(),
