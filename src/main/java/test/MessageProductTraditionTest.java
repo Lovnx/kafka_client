@@ -31,13 +31,13 @@ public class MessageProductTraditionTest {
 
     public static void main(String[] args) {
         MessageProductTraditionTest test = new MessageProductTraditionTest();
-        poolExecutor.execute(test::testProduceLocal);
-        //poolExecutor.execute(test::testProduceLocal2);
+        //poolExecutor.execute(test::testProduceLocal);
+        poolExecutor.execute(test::testProduceLocal2);
         //MessageProductTraditionTest.testProduce2();
         //test.testProduce();
     }
 
-    static ThreadLocal<KafkaProducer<String, String>> producerThreadLocal = ThreadLocal.withInitial(() -> new KafkaProducer<>(MessageProductTraditionTest.properties4()));
+    static ThreadLocal<KafkaProducer<String, String>> producerThreadLocal = ThreadLocal.withInitial(() -> new KafkaProducer<>(MessageProductTraditionTest.properties3()));
 
     /**
      * 测试线程事务隔离性
@@ -104,8 +104,7 @@ public class MessageProductTraditionTest {
      * 测试线程事务隔离性
      */
     public void testProduce() {
-        MessageProductTraditionTest test = new MessageProductTraditionTest();
-        KafkaProducer<String, String> producer2 = new KafkaProducer<>(test.properties2());
+        KafkaProducer<String, String> producer2 = new KafkaProducer<>(MessageProductTraditionTest.properties2());
         try {
             producer2.initTransactions();
             producer2.beginTransaction();
@@ -135,7 +134,7 @@ public class MessageProductTraditionTest {
      */
     public static void testProduce2() {
         MessageProductTraditionTest test = new MessageProductTraditionTest();
-        KafkaProducer<String, String> producer2 = new KafkaProducer<>(test.properties2());
+        KafkaProducer<String, String> producer2 = new KafkaProducer<>(MessageProductTraditionTest.properties2());
         try {
             producer2.initTransactions();
             producer2.beginTransaction();

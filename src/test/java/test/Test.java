@@ -1,8 +1,7 @@
 package test;
 
 import custom.client.kafka.Message.Message;
-import custom.client.kafka.config.KafkaProducerConfig;
-import custom.client.kafka.producer.MyKafkaProducer;
+import custom.client.kafka.producer.KafkaCommonProducer;
 
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -28,28 +27,13 @@ public class Test {
             new LinkedBlockingQueue<>(8)
     );
 
-    static MyKafkaProducer producer = new MyKafkaProducer(KafkaProducerConfig.builder()
-            .acks("all")
-            .bootstrapServers("kafka-service:9092,kafka-service2:9092,kafka-service3:9092")
-            .enableIdempotence(true)
-            //.enableTransactional(true)
-            .appName("finance-web")
-            .isolationLevel("read_committed")
-            .build());
-
     public static void main(String[] args) throws Exception {
-        for (int i = 0; i < 5; i++) {
-            int value = i;
-            //producer.openTransaction(() -> {
-            producer.sendAsync(
-                    Message.builder()
-                            .value("自定义测试数据" + value)
-                            .key(UUID.randomUUID().toString())
-                            .topic("test-test-topic12")
-                            .build()
-            );
-            //});
-
-        }
+        KafkaCommonProducer commonProducer = new KafkaCommonProducer();
+        //同步发送
+        commonProducer.sendSync(Message.builder()
+                .topic("test-topic12")
+                .key(UUID.randomUUID().toString())
+                .value("测试数据")
+                .build());
     }
 }

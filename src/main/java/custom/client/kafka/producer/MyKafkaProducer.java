@@ -7,7 +7,6 @@ import custom.client.kafka.exception.KafkaException;
 import custom.client.kafka.exception.kafkaExceptionEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.beans.factory.InitializingBean;
@@ -21,6 +20,7 @@ import java.util.concurrent.Future;
 /**
  * @program: kafka-test
  * @description: kafka生产者（支持池化和，ThreadLocal） KafkaProducer 是线程安全，但是事务应该是ThreadLocal的
+ * TODO 重做一个
  * @author: ZengShiLin
  * @create: 2019-07-09 09:06
  **/
@@ -153,20 +153,28 @@ public class MyKafkaProducer implements InitializingBean {
      * 异步发送（无回调，发了就不管了）
      */
     public <T> Future<RecordMetadata> sendAsync(Message<T> message) {
+        Properties properties = MyKafkaProducer.properties(this.producerConfig);
+        KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
         //没有初始化不给发送
         if (!INITIALIZE) {
             throw new KafkaException(kafkaExceptionEnum.PRODUCER_THREADLOCAL_INITIALIZE_FAILURE.getValue()
                     , kafkaExceptionEnum.PRODUCER_THREADLOCAL_INITIALIZE_FAILURE.getName());
         }
-        ProducerRecord<String, String> record = new ProducerRecord<>(
-                message.getTopic(),
-                message.getKey(),
-                JSON.toJSONString(message.getValue()));
-        return PRODUCER_THREADLOCAL.get().send(record);
+        try {
+            ProducerRecord<String, String> record = new ProducerRecord<>(
+                    message.getTopic(),
+                    message.getKey(),
+                    JSON.toJSONString(message.getValue()));
+            return producer.send(record, (a, b) -> System.out.println("发送成功"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            producer.flush();
+        }
     }
 
     //TODO 添加一个有回调的异步发送者
-
 
 
     /**
@@ -178,24 +186,24 @@ public class MyKafkaProducer implements InitializingBean {
         MyKafkaProducer.checkConfig(producerConfig);
         Properties properties = new Properties();
         //是否等待所有broker响应
-        properties.put(ProducerConfig.ACKS_CONFIG, Optional.ofNullable(producerConfig.getAcks()).orElse("all"));
+        properties.put("acks", Optional.ofNullable(producerConfig.getAcks()).orElse("all"));
         //broker 服务器集群
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, producerConfig.getBootstrapServers());
+        properties.put("bootstrap.servers", producerConfig.getBootstrapServers());
         //健序列化器
-        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+        properties.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         //值序列化器
-        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+        properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         //是否开启幂等
-        properties.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, producerConfig.isEnableIdempotence());
+        properties.put("enable.idempotence", producerConfig.isEnableIdempotence());
         //是否开启事物
         if (producerConfig.isEnableTransactional()) {
             //事务 ID (每台机器独立开启)
-            properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, producerConfig.getAppName() + "_TRANSACTIONAL_ID_" + UUID.randomUUID().toString());
+            properties.put("transactional.id", producerConfig.getAppName() + "_TRANSACTIONAL_ID_" + UUID.randomUUID().toString());
             //事务级别 (默认 read_committed)
             properties.put("isolation.level", Optional.ofNullable(producerConfig.getIsolationLevel()).orElse("read_committed"));
         }
         //client ID
-        properties.put(ProducerConfig.CLIENT_ID_CONFIG, producerConfig.getAppName() + "_CLIENT_ID_" + UUID.randomUUID().toString());
+        properties.put("client.id", producerConfig.getAppName() + "_CLIENT_ID_" + UUID.randomUUID().toString());
         return properties;
     }
 
