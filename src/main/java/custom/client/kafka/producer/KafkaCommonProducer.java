@@ -41,7 +41,7 @@ public class KafkaCommonProducer implements InitializingBean {
     /**
      * 初始化生产者
      */
-    private synchronized void init() {
+    private void init() {
         Properties properties = this.getProperties();
         this.producer = new KafkaProducer<>(properties);
         this.INITIALIZE = true;
@@ -90,6 +90,8 @@ public class KafkaCommonProducer implements InitializingBean {
             log.error("消息发送失败:{}", e);
             throw new KafkaException(kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getValue(),
                     kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getName());
+        } finally {
+            producer.flush();
         }
     }
 
