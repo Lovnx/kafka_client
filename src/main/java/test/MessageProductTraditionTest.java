@@ -1,4 +1,4 @@
-package zsl;
+package test;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -31,33 +31,44 @@ public class MessageProductTraditionTest {
 
     public static void main(String[] args) {
         MessageProductTraditionTest test = new MessageProductTraditionTest();
-        //poolExecutor.execute(test::testProduceLocal);
-        poolExecutor.execute(test::testProduceLocal2);
+        poolExecutor.execute(test::testProduceLocal);
+        //poolExecutor.execute(test::testProduceLocal2);
         //MessageProductTraditionTest.testProduce2();
         //test.testProduce();
     }
 
-    static ThreadLocal<KafkaProducer<String, String>> producerThreadLocal = ThreadLocal.withInitial(() -> new KafkaProducer<>(MessageProductTraditionTest.properties3()));
+    static ThreadLocal<KafkaProducer<String, String>> producerThreadLocal = ThreadLocal.withInitial(() -> new KafkaProducer<>(MessageProductTraditionTest.properties4()));
 
     /**
      * 测试线程事务隔离性
      */
     public void testProduceLocal() {
         try {
+            //KafkaProducer<String, String> producer = producerThreadLocal.get();
             producerThreadLocal.get().initTransactions();
-            producerThreadLocal.get().beginTransaction();
-            Thread.sleep(2000);
+            //producerThreadLocal.get().beginTransaction();
+            //producer.initTransactions();
+            //producer.beginTransaction();
             for (int index = 0; index < 5; index++) {
                 ProducerRecord<String, String> record2 = new ProducerRecord<>("test-topic12", UUID.randomUUID().toString(), "线程一测试数据-test-topic12" + index);
-                producerThreadLocal.get().send(record2).get();
+                producerThreadLocal.get().send(record2, (a, b) -> System.out.println("发送成功"));
                 System.out.println("发送2");
             }
             //回滚
-            producerThreadLocal.get().abortTransaction();
+            //producerThreadLocal.get().abortTransaction();
+            if (true) {
+                throw new RuntimeException("主动抛出异常");
+            }
+            producerThreadLocal.get().commitTransaction();
         } catch (Exception e) {
             System.out.println("事务回滚" + e.getMessage());
             //回滚
-            producerThreadLocal.get().abortTransaction();
+            //producerThreadLocal.get().abortTransaction();
+
+            producerThreadLocal.get().beginTransaction();
+            ProducerRecord<String, String> record2 = new ProducerRecord<>("test-topic12", UUID.randomUUID().toString(), "异常补充数据-test-topic12");
+            producerThreadLocal.get().send(record2, (a, b) -> System.out.println("发送成功"));
+            producerThreadLocal.get().commitTransaction();
         }
     }
 
@@ -215,7 +226,7 @@ public class MessageProductTraditionTest {
         properties.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         properties.put("enable.idempotence", true);
-        properties.put("transactional.id", UUID.randomUUID().toString());
+        properties.put("transactional.id", "ProducerTranscationnalExample_test");
         properties.put("client.id", "ProducerTranscationnalExample2");
         properties.put("isolation.level", "read_committed");
         return properties;

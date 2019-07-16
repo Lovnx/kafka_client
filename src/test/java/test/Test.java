@@ -1,4 +1,4 @@
-package zsl;
+package test;
 
 import custom.client.kafka.Message.Message;
 import custom.client.kafka.config.KafkaProducerConfig;
@@ -32,7 +32,7 @@ public class Test {
             .acks("all")
             .bootstrapServers("kafka-service:9092,kafka-service2:9092,kafka-service3:9092")
             .enableIdempotence(true)
-            .enableTransactional(true)
+            //.enableTransactional(true)
             .appName("finance-web")
             .isolationLevel("read_committed")
             .build());
@@ -41,11 +41,13 @@ public class Test {
         for (int i = 0; i < 5; i++) {
             int value = i;
             //producer.openTransaction(() -> {
-            producer.sendSync(Message.builder()
-                    .value("自定义测试数据" + value)
-                    .key(UUID.randomUUID().toString())
-                    .topic("zsl-test-topic12")
-                    .build());
+            producer.sendAsync(
+                    Message.builder()
+                            .value("自定义测试数据" + value)
+                            .key(UUID.randomUUID().toString())
+                            .topic("test-test-topic12")
+                            .build()
+            );
             //});
 
         }

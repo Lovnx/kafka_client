@@ -50,9 +50,7 @@ public class MyKafkaProducer implements InitializingBean {
             synchronized (MyKafkaProducer.class) {
                 Properties properties = MyKafkaProducer.properties(this.producerConfig);
                 //创建生产者
-                KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
-                PRODUCER_THREADLOCAL = new ThreadLocal<>();
-                PRODUCER_THREADLOCAL = ThreadLocal.withInitial(() -> producer);
+                PRODUCER_THREADLOCAL = ThreadLocal.withInitial(() -> new KafkaProducer<>(properties));
                 if (this.producerConfig.isEnableTransactional()) {
                     PRODUCER_THREADLOCAL.get().initTransactions();
                 }
@@ -168,6 +166,7 @@ public class MyKafkaProducer implements InitializingBean {
     }
 
     //TODO 添加一个有回调的异步发送者
+
 
 
     /**

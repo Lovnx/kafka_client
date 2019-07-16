@@ -12,7 +12,7 @@ import java.util.concurrent.Semaphore;
 
 /**
  * @program: kafka-test
- * @description: 生成者对象池
+ * @description: 生成者对象池 TODO
  * @author: ZengShiLin
  * @create: 2019-07-09 11:26
  **/

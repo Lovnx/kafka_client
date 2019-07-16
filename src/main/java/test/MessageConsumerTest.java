@@ -1,4 +1,4 @@
-package zsl;
+package test;
 
 import com.google.common.collect.Maps;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -24,11 +24,11 @@ public class MessageConsumerTest {
     public static void main(String[] args) {
         MessageConsumerTest test = new MessageConsumerTest();
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(test.properties());
-        consumer.subscribe(Arrays.asList("test-topic7", "test-topic8", "test-topic12", "test-topice12", "zsl-test-topic12"));
+        consumer.subscribe(Arrays.asList("test-topic7", "test-topic8", "test-topic12", "test-topice12", "test-test-topic12"));
         System.out.println("partition信息=" + consumer.partitionsFor("test-topic12"));
         Map<TopicPartition, OffsetAndMetadata> metadataMap = Maps.newHashMap();
         while (true) {
-            //读取超时时间时间 100ms
+            //读取超时时间 100ms
             ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
             for (ConsumerRecord<String, String> record : records) {
                 System.out.println("topic:" + record.topic() + ",partition=" + records.partitions() + ", offset = " + record.offset() + ", key = " + record.key() + ", value = " + record.value());
