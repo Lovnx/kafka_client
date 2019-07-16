@@ -20,10 +20,11 @@ import java.util.concurrent.Future;
 /**
  * @program: kafka-test
  * @description: kafka生产者（支持池化和，ThreadLocal） KafkaProducer 是线程安全，但是事务应该是ThreadLocal的
- * TODO 重做一个
+ * TODO 重做一个，这个好像废掉了
  * @author: ZengShiLin
  * @create: 2019-07-09 09:06
  **/
+@Deprecated
 @Slf4j
 public class MyKafkaProducer implements InitializingBean {
 
