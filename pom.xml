@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>zsl</groupId>
-    <artifactId>kafka-test</artifactId>
+    <artifactId>kafka-client</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>kafka-test</name>
 
@@ -22,18 +22,6 @@
             <artifactId>kafka-clients</artifactId>
             <version>2.2.0</version>
         </dependency>
-        <!-- kafka 流客户端 -->
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-streams</artifactId>
-            <version>2.2.0</version>
-        </dependency>
-        <!-- kafka scala 客户端 -->
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-streams-scala_2.12</artifactId>
-            <version>2.2.0</version>
-        </dependency>
 
         <!-- guava -->
         <dependency>
@@ -48,13 +36,6 @@
             <artifactId>lombok</artifactId>
             <version>1.18.6</version>
             <scope>provided</scope>
-        </dependency>
-
-        <!-- spring-kafka -->
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
-            <version>2.2.4.RELEASE</version>
         </dependency>
 
         <!-- spring-test -->
@@ -78,27 +59,12 @@
             <version>5.1.5.RELEASE</version>
         </dependency>
 
-        <!--        &lt;!&ndash; spring-context &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.springframework</groupId>-->
-        <!--            <artifactId>spring-context</artifactId>-->
-        <!--            <version>5.1.5.RELEASE</version>-->
-        <!--        </dependency>-->
-
-        <!--        &lt;!&ndash; spring-beans &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.springframework</groupId>-->
-        <!--            <artifactId>spring-beans</artifactId>-->
-        <!--            <version>5.1.5.RELEASE</version>-->
-        <!--        </dependency>-->
-
         <!-- commons-lang3 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.9</version>
         </dependency>
-
 
         <!-- fastjson -->
         <dependency>
@@ -110,14 +76,12 @@
     </dependencies>
 
     <build>
-        <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+        <pluginManagement>
             <plugins>
-                <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
                 <plugin>
                     <artifactId>maven-clean-plugin</artifactId>
                     <version>3.1.0</version>
                 </plugin>
-                <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.0.2</version>
