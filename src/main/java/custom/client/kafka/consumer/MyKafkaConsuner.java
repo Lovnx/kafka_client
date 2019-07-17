@@ -192,7 +192,7 @@ public class MyKafkaConsuner implements InitializingBean {
         public void run() {
             this.consumer = new KafkaConsumer<>(this.properties);
             //只消费指定的Topic
-            consumer.subscribe(Collections.singleton(this.topic));
+            consumer.subscribe(Collections.singletonList(this.topic));
             //手动提交使用的Map
             Map<TopicPartition, OffsetAndMetadata> metadataMap = Maps.newHashMap();
             while (consumering) {

@@ -56,7 +56,7 @@ public class MessageConsumerTest {
         properties.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         //消费者会自动Rebalance
         properties.put("group.id", "test3");
-        properties.put("enable.auto.commit", "false");
+        properties.put("enable.auto.commit", false);
         properties.put("auto.offset.reset", "latest");
         //properties.put("auto.commit.interval.ms", "1000");
         //properties.put("session.timeout.ms", "30000");
