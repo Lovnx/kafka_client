@@ -22,3 +22,8 @@
 ![image](./image/消费者模型.png)<br>
 
 ![image](./image/消费者模型2.jpg)<br>
+
+
+##### 本次实现的消费者模型:
+
+![image](./image/消费者模型3.jpg)<br>
