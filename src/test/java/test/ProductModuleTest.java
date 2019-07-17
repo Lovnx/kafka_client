@@ -1,7 +1,8 @@
 package test;
 
 import custom.client.kafka.Message.Message;
-import custom.client.kafka.producer.KafkaCommonProducer;
+import custom.client.kafka.config.KafkaProducerConfig;
+import custom.client.kafka.producer.MyKafkaProducer;
 
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -14,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  * @author: ZengShiLin
  * @create: 2019-07-09 12:25
  **/
-public class Test {
+public class ProductModuleTest {
 
     static ThreadPoolExecutor poolExecutor = new ThreadPoolExecutor(
             8,
@@ -28,12 +29,16 @@ public class Test {
     );
 
     public static void main(String[] args) throws Exception {
-        KafkaCommonProducer commonProducer = new KafkaCommonProducer();
-        //同步发送
-        commonProducer.sendSync(Message.builder()
-                .topic("test-topic12")
-                .key(UUID.randomUUID().toString())
-                .value("测试数据")
+        MyKafkaProducer producer = new MyKafkaProducer(KafkaProducerConfig.builder()
+                .bootstrapServers("kafka-service:9092,kafka-service2:9092,kafka-service3:9092")
+                .acks("all")
+                .enableTransactional(false)
+                .enableIdempotence(true)
+                .appName("finance-web")
                 .build());
+        //KafkaCommonProducer commonProducer = new KafkaCommonProducer();
+        Message<String> message = new Message<>(UUID.randomUUID().toString(), "test-topic12", "测试数据【新新】");
+        //同步发送
+        producer.sendSync(message);
     }
 }

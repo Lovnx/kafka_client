@@ -7,10 +7,12 @@ import custom.client.kafka.exception.KafkaException;
 import custom.client.kafka.exception.kafkaExceptionEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.Properties;
@@ -20,12 +22,11 @@ import java.util.concurrent.Future;
 /**
  * @program: kafka-test
  * @description: kafka生产者（支持池化和，ThreadLocal） KafkaProducer 是线程安全，但是事务应该是ThreadLocal的
- * TODO 重做一个，这个好像废掉了
  * @author: ZengShiLin
  * @create: 2019-07-09 09:06
  **/
-@Deprecated
 @Slf4j
+@Service
 public class MyKafkaProducer implements InitializingBean {
 
     /**
@@ -80,22 +81,6 @@ public class MyKafkaProducer implements InitializingBean {
         if (null != PRODUCER_THREADLOCAL && null != PRODUCER_THREADLOCAL.get()) {
             PRODUCER_THREADLOCAL.get().close();
             PRODUCER_THREADLOCAL.remove();
-        }
-    }
-
-    /**
-     * 校验配置文件
-     *
-     * @param producerConfig 生成者配置
-     */
-    private static void checkConfig(KafkaProducerConfig producerConfig) {
-        if (null == producerConfig) {
-            throw new KafkaException(kafkaExceptionEnum.PRODUCER_CONFIGURATION_IS_EMPTY.getValue()
-                    , kafkaExceptionEnum.PRODUCER_CONFIGURATION_IS_EMPTY.getName());
-        }
-        if (null == producerConfig.getAppName()) {
-            throw new KafkaException(kafkaExceptionEnum.PRODUCER_APPNAME_IS_EMPTY.getValue()
-                    , kafkaExceptionEnum.PRODUCER_APPNAME_IS_EMPTY.getName());
         }
     }
 
@@ -187,25 +172,43 @@ public class MyKafkaProducer implements InitializingBean {
         MyKafkaProducer.checkConfig(producerConfig);
         Properties properties = new Properties();
         //是否等待所有broker响应
-        properties.put("acks", Optional.ofNullable(producerConfig.getAcks()).orElse("all"));
+        properties.put(ProducerConfig.ACKS_CONFIG, Optional.ofNullable(producerConfig.getAcks()).orElse("all"));
         //broker 服务器集群
-        properties.put("bootstrap.servers", producerConfig.getBootstrapServers());
+        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, producerConfig.getBootstrapServers());
         //健序列化器
-        properties.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         //值序列化器
-        properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         //是否开启幂等
-        properties.put("enable.idempotence", producerConfig.isEnableIdempotence());
+        properties.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, producerConfig.isEnableIdempotence());
         //是否开启事物
         if (producerConfig.isEnableTransactional()) {
             //事务 ID (每台机器独立开启)
-            properties.put("transactional.id", producerConfig.getAppName() + "_TRANSACTIONAL_ID_" + UUID.randomUUID().toString());
-            //事务级别 (默认 read_committed)
+            properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, producerConfig.getAppName() + "_TRANSACTIONAL_ID_" + UUID.randomUUID().toString());
+            //事务级别 (默认read_committed)
             properties.put("isolation.level", Optional.ofNullable(producerConfig.getIsolationLevel()).orElse("read_committed"));
         }
         //client ID
-        properties.put("client.id", producerConfig.getAppName() + "_CLIENT_ID_" + UUID.randomUUID().toString());
+        properties.put(ProducerConfig.CLIENT_ID_CONFIG, producerConfig.getAppName().toUpperCase() + "_CLIENT_ID_" + UUID.randomUUID().toString());
         return properties;
     }
+
+
+    /**
+     * 校验配置文件
+     *
+     * @param producerConfig 生成者配置
+     */
+    private static void checkConfig(KafkaProducerConfig producerConfig) {
+        if (null == producerConfig) {
+            throw new KafkaException(kafkaExceptionEnum.PRODUCER_CONFIGURATION_IS_EMPTY.getValue()
+                    , kafkaExceptionEnum.PRODUCER_CONFIGURATION_IS_EMPTY.getName());
+        }
+        if (null == producerConfig.getAppName()) {
+            throw new KafkaException(kafkaExceptionEnum.PRODUCER_APPNAME_IS_EMPTY.getValue()
+                    , kafkaExceptionEnum.PRODUCER_APPNAME_IS_EMPTY.getName());
+        }
+    }
+
 
 }

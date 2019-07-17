@@ -20,6 +20,7 @@ import java.util.UUID;
  * @author: ZengShiLin
  * @create: 2019-07-16 18:22
  **/
+@Deprecated
 @Slf4j
 @Service
 public class KafkaCommonProducer implements InitializingBean {
@@ -85,6 +86,7 @@ public class KafkaCommonProducer implements InitializingBean {
                     JSON.toJSONString(message.getValue()));
             RecordMetadata metadata = producer.send(record).get();
             System.out.println("发送成功，metadata：" + JSON.toJSONString(metadata));
+            System.out.println("key:" + message.getKey());
         } catch (Exception e) {
             e.printStackTrace();
             log.error("消息发送失败:{}", e);

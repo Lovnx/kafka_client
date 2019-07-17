@@ -40,21 +40,6 @@ public class KafkaProducerConfig {
 
 
     /**
-     * Kafka消息健序列化器(如果使用作为机器学习或者其它方面监控,那么会对图像或者视频进行序列化)
-     * TODO 暂时不对外提供自定义 因为为服务大部分数据都是走JSON
-     */
-    @Deprecated
-    private String keySerializer;
-
-    /**
-     * kafka消息值序列化器(如果使用作为机器学习或者其它方面监控,那么会对图像或者视频进行序列化)
-     * TODO 暂时不对外提供自定义 因为为服务大部分数据都是走JSON
-     */
-    @Deprecated
-    private String valueSerializer;
-
-
-    /**
      * 是否开启幂等性 true 是 false 否
      * kafka 提供三种等级的消息交付一致性
      * 最多一次 (at most once): 消息可能会丢失,但绝不不会被重复发送

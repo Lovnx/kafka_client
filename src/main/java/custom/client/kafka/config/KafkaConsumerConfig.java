@@ -25,15 +25,6 @@ public class KafkaConsumerConfig {
      */
     private String bootstrapServers;
 
-    /**
-     * 健反序列化器(如果使用作为机器学习或者其它方面监控,那么会对图像或者视频进行序列化)
-     */
-    private String keyDeserializer;
-
-    /**
-     * 值反序列化器(如果使用作为机器学习或者其它方面监控,那么会对图像或者视频进行序列化)
-     */
-    private String valueDeserializer;
 
     /**
      * 是否自动提交(如果生成者开启了事务,我建议关闭)
@@ -42,7 +33,6 @@ public class KafkaConsumerConfig {
     private boolean enableAutoCommit;
 
     /**
-     * 这是一个比较坑的配置 自动重置 offset的方式 [没有合理配置会导致消费者消费不到消息]
      * 当Kafka中没有初始偏移量，或者当前偏移量在服务器上不存在时(例如，因为数据已被删除)，该怎么办?
      * earliest:使用最早的偏移量
      * latest:使用最新的offset[默认,并建议使用]

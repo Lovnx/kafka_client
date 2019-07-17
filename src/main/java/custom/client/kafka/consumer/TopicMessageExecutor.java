@@ -13,6 +13,7 @@ public interface TopicMessageExecutor<T> {
 
     /**
      * 获取Topic名称
+     * TODO 后续允许做成一个实例消费多个Topic
      *
      * @return topice名称
      */
@@ -23,7 +24,7 @@ public interface TopicMessageExecutor<T> {
      *
      * @return 当有多个实例的时候可以标记出唯一的实例
      */
-    String getExecutorName();
+    String getUniqueName();
 
     /**
      * 处理消息
@@ -42,8 +43,22 @@ public interface TopicMessageExecutor<T> {
 
     /**
      * 是否需要手动提交(如果有多个消费同一个Topic只要有一个使用了手动提交全部都是手动提交)
+     * 说明：【自动提交】是poll的时候提交上一批拉取到的数据的offset，假设一次拉取到1000条数据，那么1000在第二次拉取才提交
+     * 【手动提交】是按照设置，定期提交offset
      *
      * @return 是否需要手动提交
      */
     boolean needManualCommit();
+
+
+    /**
+     * 提交阈值（自定义）
+     * 假设是1，那么消费一条消息就提交一次
+     * 假设如果是2，那么消费两条消息后一起提交
+     * 如果是0，消费完当前批次才提交
+     *
+     * @return
+     */
+    int commitThreshold();
+
 }
