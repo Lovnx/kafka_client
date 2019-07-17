@@ -32,13 +32,22 @@ public class ProductModuleTest {
         MyKafkaProducer producer = new MyKafkaProducer(KafkaProducerConfig.builder()
                 .bootstrapServers("kafka-service:9092,kafka-service2:9092,kafka-service3:9092")
                 .acks("all")
-                .enableTransactional(false)
+                .enableTransactional(true)
                 .enableIdempotence(true)
                 .appName("finance-web")
                 .build());
         //KafkaCommonProducer commonProducer = new KafkaCommonProducer();
-        Message<String> message = new Message<>(UUID.randomUUID().toString(), "test-topic12", "测试数据【新新】");
+        Message<String> message = new Message<>(UUID.randomUUID().toString(), "test-topic12", "测试数据【新新1】");
+        Message<String> message2 = new Message<>(UUID.randomUUID().toString(), "test-topic12", "测试数据【新新2】");
         //同步发送
-        producer.sendSync(message);
+        //producer.sendSync(message);
+        //TODO 事物只在异步发送生效
+        producer.openTransaction(() -> {
+            producer.sendAsync(message);
+            if (true) {
+                throw new RuntimeException("测试事物异常");
+            }
+            producer.sendAsync(message2);
+        });
     }
 }

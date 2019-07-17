@@ -6,10 +6,7 @@ import custom.client.kafka.config.KafkaProducerConfig;
 import custom.client.kafka.exception.KafkaException;
 import custom.client.kafka.exception.kafkaExceptionEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.clients.producer.*;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,11 +48,12 @@ public class MyKafkaProducer implements InitializingBean {
         if (null == PRODUCER_THREADLOCAL || null == PRODUCER_THREADLOCAL.get()) {
             synchronized (MyKafkaProducer.class) {
                 Properties properties = MyKafkaProducer.properties(this.producerConfig);
-                //创建生产者
-                PRODUCER_THREADLOCAL = ThreadLocal.withInitial(() -> new KafkaProducer<>(properties));
+                KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
                 if (this.producerConfig.isEnableTransactional()) {
-                    PRODUCER_THREADLOCAL.get().initTransactions();
+                    producer.initTransactions();
                 }
+                //创建生产者
+                PRODUCER_THREADLOCAL = ThreadLocal.withInitial(() -> producer);
                 INITIALIZE = true;
                 Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
                 log.info("生产者初始化完成");
@@ -110,6 +108,7 @@ public class MyKafkaProducer implements InitializingBean {
 
     /**
      * 同步发送（等待同步响应）
+     * 同步发送，事务将会失效
      *
      * @param message 需要发送的消息
      */
@@ -126,21 +125,23 @@ public class MyKafkaProducer implements InitializingBean {
                     JSON.toJSONString(message.getValue()));
             RecordMetadata metadata = PRODUCER_THREADLOCAL.get().send(record).get();
             System.out.println("发送成功，metadata：" + JSON.toJSONString(metadata));
+            log.info("消息发送成功，topic:{},key:{},metadata{}", message.getTopic(), message.getKey(), metadata);
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error("消息发送失败:{}", e);
+            log.error("生产者发送失败：{}", e);
             throw new KafkaException(kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getValue(),
-                    kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getName());
+                    kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getName() + e.getMessage());
         }
     }
 
 
     /**
-     * 异步发送（无回调，发了就不管了）
+     * 异步发送（无回调，发了就不管了）推荐使用
+     *
+     * @param message 消息内容
+     * @param <T>     消息体泛型
+     * @return Future<RecordMetadata>
      */
     public <T> Future<RecordMetadata> sendAsync(Message<T> message) {
-        Properties properties = MyKafkaProducer.properties(this.producerConfig);
-        KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
         //没有初始化不给发送
         if (!INITIALIZE) {
             throw new KafkaException(kafkaExceptionEnum.PRODUCER_THREADLOCAL_INITIALIZE_FAILURE.getValue()
@@ -151,16 +152,47 @@ public class MyKafkaProducer implements InitializingBean {
                     message.getTopic(),
                     message.getKey(),
                     JSON.toJSONString(message.getValue()));
-            return producer.send(record, (a, b) -> System.out.println("发送成功"));
+            return PRODUCER_THREADLOCAL.get().send(record, (metadata, exception) -> {
+                if (exception != null) {
+                    log.error("生产者发送失败：{}", exception);
+                    throw new KafkaException(kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getValue(),
+                            kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getName() + exception.getMessage());
+                }
+                log.info("消息发送成功,topic:{},key:{}", message.getTopic(), message.getKey());
+            });
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            producer.flush();
+            log.error("生产者发送失败：{}", e);
+            throw new KafkaException(kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getValue(),
+                    kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getName() + e.getMessage());
         }
     }
 
-    //TODO 添加一个有回调的异步发送者
+    /**
+     * 异步自定义回调发送
+     *
+     * @param message  消息内容
+     * @param callback 回调内容
+     * @param <T>      消息泛型
+     * @return Future<RecordMetadata>
+     */
+    public <T> Future<RecordMetadata> sendAsync(Message<T> message, Callback callback) {
+        //没有初始化不给发送
+        if (!INITIALIZE) {
+            throw new KafkaException(kafkaExceptionEnum.PRODUCER_THREADLOCAL_INITIALIZE_FAILURE.getValue()
+                    , kafkaExceptionEnum.PRODUCER_THREADLOCAL_INITIALIZE_FAILURE.getName());
+        }
+        try {
+            ProducerRecord<String, String> record = new ProducerRecord<>(
+                    message.getTopic(),
+                    message.getKey(),
+                    JSON.toJSONString(message.getValue()));
+            return PRODUCER_THREADLOCAL.get().send(record, callback);
+        } catch (Exception e) {
+            log.error("生产者发送失败：{}", e);
+            throw new KafkaException(kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getValue(),
+                    kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getName() + e.getMessage());
+        }
+    }
 
 
     /**
