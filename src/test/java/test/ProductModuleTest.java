@@ -28,26 +28,48 @@ public class ProductModuleTest {
             new LinkedBlockingQueue<>(8)
     );
 
+    static MyKafkaProducer producer = new MyKafkaProducer(KafkaProducerConfig.builder()
+            .bootstrapServers("kafka-service:9092,kafka-service2:9092,kafka-service3:9092")
+            .acks("all")
+            .enableTransactional(true)
+            .enableIdempotence(true)
+            .appName("finance-web")
+            .build());
+
     public static void main(String[] args) throws Exception {
-        MyKafkaProducer producer = new MyKafkaProducer(KafkaProducerConfig.builder()
-                .bootstrapServers("kafka-service:9092,kafka-service2:9092,kafka-service3:9092")
-                .acks("all")
-                .enableTransactional(true)
-                .enableIdempotence(true)
-                .appName("finance-web")
-                .build());
+        ProductModuleTest test = new ProductModuleTest();
         //KafkaCommonProducer commonProducer = new KafkaCommonProducer();
         Message<String> message = new Message<>(UUID.randomUUID().toString(), "test-topic12", "测试数据【新新1】");
         Message<String> message2 = new Message<>(UUID.randomUUID().toString(), "test-topic12", "测试数据【新新2】");
         //同步发送
         //producer.sendSync(message);
-        //TODO 事物只在异步发送生效
+
+
         producer.openTransaction(() -> {
-            producer.sendAsync(message);
-            if (true) {
-                throw new RuntimeException("测试事物异常");
-            }
-            producer.sendAsync(message2);
+            test.business();
         });
+
+
     }
+
+
+    public void business() {
+        //业务环节一发送消息
+        Message<String> message = new Message<>(UUID.randomUUID().toString(), "test-topic12", "测试数据【新新1】");
+        producer.sendAsync(message);
+        //进行其他内容(内部有JDBC事物)
+        this.crudByTransaction();
+        //业务环节二发送消息
+        Message<String> message2 = new Message<>(UUID.randomUUID().toString(), "test-topic12", "测试数据【新新2】");
+        producer.sendAsync(message2);
+    }
+
+
+    /**
+     * 事物进行
+     */
+    public void crudByTransaction() {
+
+    }
+
 }
