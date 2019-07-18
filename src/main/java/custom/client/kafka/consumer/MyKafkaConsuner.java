@@ -197,7 +197,7 @@ public class MyKafkaConsuner implements InitializingBean {
             Map<TopicPartition, OffsetAndMetadata> metadataMap = Maps.newHashMap();
             while (consumering) {
                 //100ms 间隔主动抓取一次
-                ConsumerRecords<String, String> records = this.consumer.poll(Duration.ofMillis(100));
+                ConsumerRecords<String, String> records = this.consumer.poll(Duration.ofMillis(1000));
                 System.out.println("拉取一次消息,topic" + this.topic);
                 int count = 0;
                 isRun = true;
@@ -211,6 +211,7 @@ public class MyKafkaConsuner implements InitializingBean {
                     //广播消费消息（如果有多个实例相当于广播,Message使用了final不用担心被其它实例修改）,并且实例和实例之间不能互相影响 TODO 这里消费成功的方式有待考量
                     for (TopicMessageExecutor temp : this.messageExecutors) {
                         try {
+                            //TODO 一开始考虑使用线程池多线程消费，但是当poll数据量比较大的时候还是比较危险的，而且占时没有这个需要
                             success = temp.execute(message);
                         } catch (Exception e) {
                             log.error("kafka消费失败,实例名称:{},Topic,{},Exception：{}", temp.getUniqueName(), message.getTopic(), e);
