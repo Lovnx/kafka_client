@@ -20,7 +20,7 @@ public interface TopicMessageExecutor<T> {
     String getTopic();
 
     /**
-     * 实例名称
+     * 实例名称(可以不填，只是为了方便排查线上问题)
      *
      * @return 当有多个实例的时候可以标记出唯一的实例
      */
@@ -35,7 +35,8 @@ public interface TopicMessageExecutor<T> {
     boolean execute(Message<T> message);
 
     /**
-     * 获取消息类型
+     * 获取消息类型(由于使用的是Fastjson TypeReference 更加安全)
+     * 如果不给类型,直接返回String-json
      *
      * @return 返回消息序列化类型
      */
@@ -57,7 +58,7 @@ public interface TopicMessageExecutor<T> {
      * 假设如果是2，那么消费两条消息后一起提交
      * 如果是0，消费完当前批次才提交
      *
-     * @return
+     * @return 阈值
      */
     int commitThreshold();
 

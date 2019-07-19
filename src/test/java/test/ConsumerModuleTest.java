@@ -17,8 +17,9 @@ public class ConsumerModuleTest {
 
     @Test
     public void test() throws InterruptedException {
-        Thread.sleep(3000);
-        System.out.println("运行结束");
+        while (true) {
+
+        }
     }
 
 }

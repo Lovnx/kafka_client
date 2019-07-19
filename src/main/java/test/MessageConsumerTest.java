@@ -1,10 +1,7 @@
 package test;
 
 import com.google.common.collect.Maps;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
 
 import java.time.Duration;
@@ -24,7 +21,7 @@ public class MessageConsumerTest {
     public static void main(String[] args) {
         MessageConsumerTest test = new MessageConsumerTest();
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(test.properties());
-        consumer.subscribe(Arrays.asList("test-topic7", "test-topic8", "test-topic12", "test-topice12", "test-test-topic12"));
+        consumer.subscribe(Arrays.asList("test-topic12", "test-topice123"));
         System.out.println("partition信息=" + consumer.partitionsFor("test-topic12"));
         Map<TopicPartition, OffsetAndMetadata> metadataMap = Maps.newHashMap();
         while (true) {
@@ -58,6 +55,7 @@ public class MessageConsumerTest {
         properties.put("group.id", "test3");
         properties.put("enable.auto.commit", false);
         properties.put("auto.offset.reset", "latest");
+        properties.put(ConsumerConfig.CLIENT_ID_CONFIG, "test3-test");
         //properties.put("auto.commit.interval.ms", "1000");
         //properties.put("session.timeout.ms", "30000");
         //当设置成1的时候，几乎就算一个一个消息消费了（如果单个消息大于这个值，就返回单条消息）（默认值52428800 大概是 50MB）

@@ -25,7 +25,7 @@ public class Consumer extends DefaultTopicMessageExecutor {
     public boolean execute(Message message) {
         log.info("收到消息：{}", message);
         System.out.println("消费到消息:" + JSON.toJSONString(message));
-        return false;
+        return true;
     }
 
     @Override

@@ -81,10 +81,9 @@ public class MyKafkaConsuner implements InitializingBean {
             hostName = ia.getHostName();
             ip = ia.getHostAddress();
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error("kafka消费者获取机器信息失败:{}", e);
         }
-        //TODO 读取消费者配置
+        //读取消费者配置
         this.initConsume();
         //关闭钩子
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdow));
@@ -198,23 +197,30 @@ public class MyKafkaConsuner implements InitializingBean {
             while (consumering) {
                 //100ms 间隔主动抓取一次
                 ConsumerRecords<String, String> records = this.consumer.poll(Duration.ofMillis(1000));
-                System.out.println("拉取一次消息,topic" + this.topic);
+                System.out.println("拉取一次消息:" + this.topic + ",数据是否为空:" + records.isEmpty());
                 int count = 0;
                 isRun = true;
                 for (ConsumerRecord<String, String> record : records) {
                     log.info("topic:" + record.topic() + ",partition=" + records.partitions() + ", offset = " + record.offset() + ", key = " + record.key() + ", value = " + record.value());
                     TypeReference typeReference = this.messageExecutors.get(0).getTypeReference();
-                    //消息序列化成指定的DTO格式（传输数据都需要使用DTO封装起来）
-                    Object obj = JSON.parseObject(record.value(), typeReference.getType());
-                    Message message = new Message<>(record.key(), record.topic(), obj);
+                    Message message;
+                    if (null != typeReference && !"java.lang.String".equals(typeReference.getType().getTypeName())) {
+                        //消息序列化成指定的DTO格式（传输数据都需要使用DTO封装起来）
+                        Object obj = JSON.parseObject(record.value(), typeReference.getType());
+                        message = new Message<>(record.key(), record.topic(), obj);
+                    } else {
+                        //如果是String类型,或者类型为空直接返回
+                        message = new Message<>(record.key(), record.topic(), record.value());
+                    }
                     boolean success = false;
                     //广播消费消息（如果有多个实例相当于广播,Message使用了final不用担心被其它实例修改）,并且实例和实例之间不能互相影响 TODO 这里消费成功的方式有待考量
                     for (TopicMessageExecutor temp : this.messageExecutors) {
                         try {
                             //TODO 一开始考虑使用线程池多线程消费，但是当poll数据量比较大的时候还是比较危险的，而且占时没有这个需要
                             success = temp.execute(message);
+                            log.info("消息消费成功,topic:{},key:{},实例名称:{}", this.topic, message.getKey(), temp.getUniqueName());
                         } catch (Exception e) {
-                            log.error("kafka消费失败,实例名称:{},Topic,{},Exception：{}", temp.getUniqueName(), message.getTopic(), e);
+                            log.error("kafka消费失败,Topic,{},实例名称:{},Exception：{}", message.getTopic(), temp.getUniqueName(), e);
                         }
                     }
                     //当前消息消费成功
@@ -270,6 +276,8 @@ public class MyKafkaConsuner implements InitializingBean {
         }
         //消费组ID
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, consumerConfig.getAppName().toUpperCase());
+        //clientID
+        properties.put(ConsumerConfig.CLIENT_ID_CONFIG, consumerConfig.getAppName().toUpperCase() + hostName);
         //如果消费者重启，从最新的offset开始消费
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         //下面这两个值是影响 消费者 Rebalance的
@@ -300,6 +308,16 @@ public class MyKafkaConsuner implements InitializingBean {
         });
         INITIALIZE = false;
         log.info("系统kafka消费者们已经关闭");
+    }
+
+
+    public static void main(String[] args) {
+        String json = "线程一测试数据-test-topic12";
+        TypeReference typeReference = new TypeReference<String>() {
+        };
+        System.out.println(typeReference.getType().getTypeName());
+        Object obj = JSON.parseObject(json, String.class);
+        System.out.println(obj);
     }
 
 }
