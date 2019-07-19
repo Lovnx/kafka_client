@@ -26,4 +26,4 @@
 
 ##### 本次实现的消费者模型:
 
-![image](./image/消费者模型5.jpg)<br>
+![image](./image/消费者模型6.jpg)<br>
