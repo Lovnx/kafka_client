@@ -27,3 +27,19 @@
 ##### 本次实现的消费者模型:
 
 ![image](./image/消费者模型6.jpg)<br>
+
+### **项目结构**
+![image](./image/项目分包.png)<br>
+![image](./image/项目核心类.png)<br>
+
+
+### **项目结构依赖**
+
+| 名称                | 版本    
+| -----             |-----:   
+| spring            | 5.1.5.RELEASE      
+| commons-lang3     | 3.9     
+| fastjson          | 1.2.58   
+| lombok            | 1.18.6   
+| kafka-clients     | 2.2.0   
+| guava             | 27.1-jre    
