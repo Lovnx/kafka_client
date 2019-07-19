@@ -311,13 +311,4 @@ public class MyKafkaConsuner implements InitializingBean {
     }
 
 
-    public static void main(String[] args) {
-        String json = "线程一测试数据-test-topic12";
-        TypeReference typeReference = new TypeReference<String>() {
-        };
-        System.out.println(typeReference.getType().getTypeName());
-        Object obj = JSON.parseObject(json, String.class);
-        System.out.println(obj);
-    }
-
 }
