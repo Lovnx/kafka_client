@@ -66,6 +66,7 @@ public class Monitor implements InitializingBean {
                     log.info("Topic:{},Partition:{},消息差距：{}", key.topic(), key.partition(), value);
                 }
             });
+            //一分钟一次监控结果
         }, 0, 1, TimeUnit.MINUTES);
     }
 
