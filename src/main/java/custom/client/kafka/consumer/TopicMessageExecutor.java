@@ -1,7 +1,7 @@
 package custom.client.kafka.consumer;
 
 import com.alibaba.fastjson.TypeReference;
-import custom.client.kafka.Message.Message;
+import custom.client.kafka.message.Message;
 
 /**
  * @program: kafka-test

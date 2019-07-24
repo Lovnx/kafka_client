@@ -1,4 +1,4 @@
-package custom.client.kafka.Message;
+package custom.client.kafka.message;
 
 import lombok.Getter;
 

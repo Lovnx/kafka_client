@@ -4,14 +4,15 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import custom.client.kafka.Message.Message;
 import custom.client.kafka.config.KafkaConsumerConfig;
 import custom.client.kafka.exception.KafkaException;
 import custom.client.kafka.exception.kafkaExceptionEnum;
+import custom.client.kafka.message.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -61,6 +62,7 @@ public class MyKafkaConsuner implements InitializingBean {
      * 是否已经初始化（volatile 增强可见性）
      */
     private volatile static boolean INITIALIZE = false;
+
 
     /**
      * 当前服务的IP
@@ -267,9 +269,9 @@ public class MyKafkaConsuner implements InitializingBean {
         //涉及的broker
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, consumerConfig.getBootstrapServers());
         //健反序列化器
-        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         //值反序列化器
-        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         if (null != needManualCommit) {
             //当前Topic需要手动提交
             properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);

@@ -1,12 +1,13 @@
 package custom.client.kafka.producer;
 
 import com.alibaba.fastjson.JSON;
-import custom.client.kafka.Message.Message;
 import custom.client.kafka.config.KafkaProducerConfig;
 import custom.client.kafka.exception.KafkaException;
 import custom.client.kafka.exception.kafkaExceptionEnum;
+import custom.client.kafka.message.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.*;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -208,9 +209,9 @@ public class MyKafkaProducer implements InitializingBean {
         //broker 服务器集群
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, producerConfig.getBootstrapServers());
         //健序列化器
-        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         //值序列化器
-        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         //是否开启幂等
         properties.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, producerConfig.isEnableIdempotence());
         //是否开启事物

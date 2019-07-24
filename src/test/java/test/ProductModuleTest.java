@@ -1,6 +1,6 @@
 package test;
 
-import custom.client.kafka.Message.Message;
+import custom.client.kafka.message.Message;
 import custom.client.kafka.config.KafkaProducerConfig;
 import custom.client.kafka.producer.MyKafkaProducer;
 
