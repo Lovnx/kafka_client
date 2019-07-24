@@ -17,9 +17,7 @@ public class ConsumerModuleTest {
 
     @Test
     public void test() throws InterruptedException {
-        while (true) {
-
-        }
+        Thread.sleep(5000);
     }
 
 }
