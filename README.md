@@ -25,7 +25,7 @@ kafka 具有吞吐量高,高压高堆积的特点,从 0.8.x 版本到 0.10.x 1.x
 **本项目生产者模型：**<br>
 ![image](./image/生产者模型3.jpg)<br>
 
-开启事物方式：<br>
+#### 开启事物方式：<br>
 ![image](./image/事务1.png)<br>
 业务代码示例：<br>
 ![image](./image/事务2.png)<br>
