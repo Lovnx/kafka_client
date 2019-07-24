@@ -211,7 +211,7 @@ public class MyKafkaConsuner implements InitializingBean {
                         Object obj = JSON.parseObject(record.value(), typeReference.getType());
                         message = new Message<>(record.key(), record.topic(), obj);
                     } else {
-                        //如果是String类型,或者类型为空直接返回
+                        //如果是String类型,或者类型为空直接返回消息数据
                         message = new Message<>(record.key(), record.topic(), record.value());
                     }
                     boolean success = false;
