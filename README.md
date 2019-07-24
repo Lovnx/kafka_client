@@ -33,7 +33,10 @@ kafka 具有吞吐量高,高压高堆积的特点,从 0.8.x 版本到 0.10.x 1.x
 
 ### **项目结构**
 ![image](./image/项目分包.png)<br>
+
 ![image](./image/项目核心类.png)<br>
+
+![image](./image/消费者监控.png)<br>
 
 
 ### **项目结构依赖**
