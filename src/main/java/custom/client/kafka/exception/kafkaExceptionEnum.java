@@ -18,7 +18,9 @@ public enum kafkaExceptionEnum {
     PRODUCER_POOL_INITIALIZE_FAILURE(10002, "生产者对象池初始化失败"),
     PRODUCER_APPNAME_IS_EMPTY(10003, "生产者APP名称为空"),
     PRODUCER_SEND_FAILURE(10004, "生产者发送消息失败"),
-    CONSUMER_CONFIGURATION_IS_EMPTY(10005, "消费者配置为空");
+    PRODUCER_OPEN_TRANSACTION_FAILURE(10005, "开启事务失败"),
+    PRODUCER_TRANSACTION_ROLL_BACK(10006, "事务回滚"),
+    CONSUMER_CONFIGURATION_IS_EMPTY(10007, "消费者配置为空");
 
     /**
      * 枚举value

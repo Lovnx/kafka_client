@@ -92,16 +92,18 @@ public class MyKafkaProducer implements InitializingBean {
         try {
             PRODUCER_THREADLOCAL.get().beginTransaction();
         } catch (Exception e) {
-            System.out.println("开启事务失败:" + e.getMessage());
+            log.error("开启事务失败：{}", e);
+            throw new KafkaException(kafkaExceptionEnum.PRODUCER_OPEN_TRANSACTION_FAILURE.getValue()
+                    , kafkaExceptionEnum.PRODUCER_OPEN_TRANSACTION_FAILURE.getName());
         }
         try {
             execute.doInTransaction();
             //提交事务
             PRODUCER_THREADLOCAL.get().commitTransaction();
         } catch (Exception e) {
-            System.out.println("遇到异常事务回滚:" + e.getMessage());
             //回滚事务
             PRODUCER_THREADLOCAL.get().abortTransaction();
+            log.error("kafka事务回滚:{}", e.getMessage());
             throw e;
         }
     }
