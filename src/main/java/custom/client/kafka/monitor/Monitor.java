@@ -14,6 +14,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Map;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
  * @create: 2019-07-24 09:38
  **/
 @Slf4j
+@Component
 public class Monitor implements InitializingBean {
 
     @Autowired
@@ -53,6 +55,7 @@ public class Monitor implements InitializingBean {
      */
     @Override
     public void afterPropertiesSet() {
+        log.info("初始化kafka客户端监控");
         //消费者监控一分钟输出一次监控
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             Map<TopicPartition, Long> topicPartitionLongMap = this.lagOf(consumerConfig.getAppName().toUpperCase(), consumerConfig.getBootstrapServers());
