@@ -1,6 +1,7 @@
 package custom.client.kafka.producer;
 
 import com.alibaba.fastjson.JSON;
+import com.dianping.cat.Cat;
 import custom.client.kafka.config.KafkaProducerConfig;
 import custom.client.kafka.exception.KafkaException;
 import custom.client.kafka.exception.kafkaExceptionEnum;
@@ -127,10 +128,11 @@ public class MyKafkaProducer implements InitializingBean {
                     message.getKey(),
                     JSON.toJSONString(message.getValue()));
             RecordMetadata metadata = PRODUCER_THREADLOCAL.get().send(record).get();
-            System.out.println("发送成功，metadata：" + JSON.toJSONString(metadata));
+            Cat.getProducer().logEvent("kafka.message.produce.sync", message.getTopic());
             log.info("消息发送成功，topic:{},key:{},metadata{}", message.getTopic(), message.getKey(), metadata);
         } catch (Exception e) {
             log.error("生产者发送失败：{}", e);
+            e.printStackTrace();
             throw new KafkaException(kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getValue(),
                     kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getName() + e.getMessage());
         }
@@ -155,12 +157,14 @@ public class MyKafkaProducer implements InitializingBean {
                     message.getTopic(),
                     message.getKey(),
                     JSON.toJSONString(message.getValue()));
+            log.info("准备异步发送消息,topic:{},key:{}", message.getTopic(), message.getKey());
             return PRODUCER_THREADLOCAL.get().send(record, (metadata, exception) -> {
                 if (exception != null) {
                     log.error("生产者发送失败：{}", exception);
                     throw new KafkaException(kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getValue(),
                             kafkaExceptionEnum.PRODUCER_SEND_FAILURE.getName() + exception.getMessage());
                 }
+                Cat.getProducer().logEvent("kafka.message.produce.async", message.getTopic());
                 log.info("消息发送成功,topic:{},key:{}", message.getTopic(), message.getKey());
             });
         } catch (Exception e) {
@@ -189,6 +193,8 @@ public class MyKafkaProducer implements InitializingBean {
                     message.getTopic(),
                     message.getKey(),
                     JSON.toJSONString(message.getValue()));
+            log.info("准备异步发送消息,topic:{},key:{}", message.getTopic(), message.getKey());
+            Cat.getProducer().logEvent("kafka.message.produce.async", message.getTopic());
             return PRODUCER_THREADLOCAL.get().send(record, callback);
         } catch (Exception e) {
             log.error("生产者发送失败：{}", e);

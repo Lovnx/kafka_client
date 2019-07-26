@@ -2,6 +2,8 @@ package custom.client.kafka.consumer;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Transaction;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import custom.client.kafka.config.KafkaConsumerConfig;
@@ -111,8 +113,6 @@ public class MyKafkaConsuner implements InitializingBean {
             log.info("当前服务没有消费者实例");
             return;
         }
-        System.out.println(topicMessageExecutorsMap.keySet().size());
-        System.out.println(topicMessageExecutorsMap.keySet().size() + 1);
         //创建线程池(一个topic一个线程单独跑)
         ifinPoolExecutor = new ThreadPoolExecutor(
                 topicMessageExecutorsMap.keySet().size(),
@@ -129,7 +129,7 @@ public class MyKafkaConsuner implements InitializingBean {
                     .findAny().orElse(null);
             Properties properties = this.getPropertie(consumerConfig, needManualCommit);
             //线程池运行
-            System.out.println("初始化消费者,topic:" + key);
+            log.info("初始化消费者,topic:{}", key);
             ifinPoolExecutor.execute(new ConsumerRunnable(properties, value, value.get(0).commitThreshold()));
         });
 
@@ -215,16 +215,20 @@ public class MyKafkaConsuner implements InitializingBean {
                         message = new Message<>(record.key(), record.topic(), record.value());
                     }
                     boolean success = false;
-                    //广播消费消息（如果有多个实例相当于广播,Message使用了final不用担心被其它实例修改）,并且实例和实例之间不能互相影响 TODO 这里消费成功的方式有待考量
+                    //广播消费消息（如果有多个实例相当于广播,Message使用了final不用担心被其它实例修改）,并且实例和实例之间不能互相影响
+                    Transaction transaction = Cat.newTransaction("kafka.message.consumer", this.topic);
                     for (TopicMessageExecutor temp : this.messageExecutors) {
                         try {
-                            //TODO 一开始考虑使用线程池多线程消费，但是当poll数据量比较大的时候还是比较危险的，而且占时没有这个需要
                             success = temp.execute(message);
                             log.info("消息消费成功,topic:{},key:{},实例名称:{}", this.topic, message.getKey(), temp.getUniqueName());
                         } catch (Exception e) {
                             log.error("kafka消费失败,Topic,{},实例名称:{},Exception：{}", message.getTopic(), temp.getUniqueName(), e);
+                            transaction.setStatus(e);
+                            transaction.complete();
                         }
                     }
+                    transaction.setStatus(Transaction.SUCCESS);
+                    transaction.complete();
                     //当前消息消费成功
                     if (success) {
                         //消费信息：【消费系统 + 消息Key + 消费时间毫秒 + 系统IP + 系统HostName】 数据上报，用来排查线上问题
@@ -278,7 +282,7 @@ public class MyKafkaConsuner implements InitializingBean {
         }
         //消费组ID
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, consumerConfig.getAppName().toUpperCase());
-        //clientID
+        //ClientID
         properties.put(ConsumerConfig.CLIENT_ID_CONFIG, consumerConfig.getAppName().toUpperCase() + hostName);
         //如果消费者重启，从最新的offset开始消费
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
@@ -288,7 +292,7 @@ public class MyKafkaConsuner implements InitializingBean {
         //7秒没收到心跳就剔除消费者组进行Rebalance （7秒钟内允许等待三次心跳）
         properties.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "7000");
         //一次拉取消息大小,当设置成1的时候，几乎就算一个一个消息消费了（如果单个消息大于这个值，就返回单条消息）（默认值52428800 大概是 50MB）
-        //下面这些配置能有效提升吞吐量
+        //下面这些配置能有效提升吞吐量 TODO 后续换成可配置的
         properties.put(ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, 52428800);
         properties.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, 52428800);
         return properties;
